@@ -7,7 +7,6 @@ Algorithm:
 - winner_ticket = (seed % total_tickets) + 1
 
 Run:
-cd btc_draw
-python3 draw.py <BTC_BLOCK_HASH>
+python3 . <BTC_BLOCK_HASH>
 
 participants.csv must be placed next to draw.py.
