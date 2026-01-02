@@ -4,10 +4,18 @@ import hashlib
 import os
 import sys
 
+VERSION = "1.0.0"
+
+
+def _out(key: str, value: str) -> None:
+    """Print a stable, machine-parseable key=value line to stdout."""
+    print(f"{key}={value}")
+
+
 def main() -> int:
     # Require exactly one argument: 64 hex characters.
     if len(sys.argv) != 2:
-        print("Usage: python3 draw.py <64-hex-block-hash>", file=sys.stderr)
+        print("Usage: python3 . <64-hex-block-hash>  (or: python3 draw.py <64-hex-block-hash>)", file=sys.stderr)
         return 1
 
     block_hash = sys.argv[1].strip().lower()
@@ -20,7 +28,7 @@ def main() -> int:
     csv_path = os.path.join(base_dir, "participants.csv")
 
     if not os.path.isfile(csv_path):
-        print(f"Error: missing participants.csv next to draw.py: {csv_path}", file=sys.stderr)
+        print(f"Error: missing participants.csv next to the tool: {csv_path}", file=sys.stderr)
         return 1
 
     with open(csv_path, "rb") as f:
@@ -31,9 +39,8 @@ def main() -> int:
     seed_input = (block_hash + snapshot_hash).encode("utf-8")
     seed = hashlib.sha256(seed_input).hexdigest()
 
-    # Parse participants and compute total tickets.
-    rows = []
-    total_tickets = 0
+    # Parse participants and validate ticket coverage.
+    rows: list[tuple[str, int, int]] = []
     with open(csv_path, "r", newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
@@ -43,10 +50,15 @@ def main() -> int:
             return 1
 
         for row in reader:
+            username = (row.get("username") or "").strip()
+            if not username:
+                print("Error: username cannot be empty.", file=sys.stderr)
+                return 1
+
             try:
                 from_ticket = int(row["from_ticket"])
                 to_ticket = int(row["to_ticket"])
-            except (ValueError, TypeError):
+            except (ValueError, TypeError, KeyError):
                 print("Error: from_ticket/to_ticket must be integers.", file=sys.stderr)
                 return 1
 
@@ -54,13 +66,26 @@ def main() -> int:
                 print("Error: invalid ticket range (from_ticket must be >= 1 and <= to_ticket).", file=sys.stderr)
                 return 1
 
-            rows.append((row["username"], from_ticket, to_ticket))
-            if to_ticket > total_tickets:
-                total_tickets = to_ticket
+            rows.append((username, from_ticket, to_ticket))
 
-    if total_tickets <= 0 or not rows:
-        print("Error: no valid tickets found in participants.csv", file=sys.stderr)
+    if not rows:
+        print("Error: participants.csv has no rows.", file=sys.stderr)
         return 1
+
+    # Ensure ranges are contiguous and non-overlapping: 1..total_tickets.
+    rows_sorted = sorted(rows, key=lambda r: r[1])
+    if rows_sorted[0][1] != 1:
+        print("Error: ticket ranges must start at 1.", file=sys.stderr)
+        return 1
+
+    prev_to = 0
+    for username, from_ticket, to_ticket in rows_sorted:
+        if from_ticket != prev_to + 1:
+            print("Error: ticket ranges must be contiguous with no gaps/overlaps.", file=sys.stderr)
+            return 1
+        prev_to = to_ticket
+
+    total_tickets = prev_to
 
     # Determine the winner ticket.
     winner_ticket = (int(seed, 16) % total_tickets) + 1
@@ -68,7 +93,7 @@ def main() -> int:
     # Find the winner range.
     winner_username = ""
     winner_range = ""
-    for username, from_ticket, to_ticket in rows:
+    for username, from_ticket, to_ticket in rows_sorted:
         if from_ticket <= winner_ticket <= to_ticket:
             winner_username = username
             winner_range = f"{from_ticket}-{to_ticket}"
@@ -79,15 +104,20 @@ def main() -> int:
         print("Error: winner ticket not found in any range (CSV ranges inconsistent).", file=sys.stderr)
         return 1
 
-    # Print labeled outputs in order for clarity.
-    print(f"block_hash (BTC block): {block_hash}")
-    print(f"snapshot_hash_csv (sha256 of participants.csv): {snapshot_hash}")
-    print(f"seed (sha256(block_hash+snapshot_hash_csv)): {seed}")
-    print(f"total_tickets: {total_tickets}")
-    print(f"winner_ticket: {winner_ticket}")
-    print(f"winner_username: {winner_username}")
-    print(f"winner_range: {winner_range}")
+    # Print stable, machine-parseable outputs (key=value).
+    _out("tool", "alien-draw-tool")
+    _out("version", VERSION)
+    _out("block_hash", block_hash)
+    _out("participants_csv", os.path.basename(csv_path))
+    _out("participants_csv_bytes", str(len(csv_bytes)))
+    _out("participants_csv_sha256", snapshot_hash)
+    _out("seed_sha256", seed)
+    _out("total_tickets", str(total_tickets))
+    _out("winner_ticket", str(winner_ticket))
+    _out("winner_username", winner_username)
+    _out("winner_ticket_range", winner_range)
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())
