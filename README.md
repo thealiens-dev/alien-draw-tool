@@ -1,4 +1,3 @@
-
 # Alien Draw Tool
 
 Deterministic and publicly verifiable draw mechanism used by **The Aliens**.
@@ -14,27 +13,30 @@ Given the same inputs, the output is always identical and can be independently r
 ## Algorithm
 
 ```
-snapshot_hash = SHA256(participants.csv bytes)
-seed          = SHA256(block_hash + snapshot_hash)
-winner_ticket = (int(seed, 16) % total_tickets) + 1
+canonical_snapshot = normalize + sort participants by username
+snapshot_hash      = SHA256(canonical_snapshot bytes)
+seed               = SHA256(block_hash + snapshot_hash)
+winner_ticket      = (int(seed, 16) % total_tickets) + 1
 ```
 
-The winning participant is the one whose ticket range contains `winner_ticket`.
+Ticket ranges are derived internally from the canonical ordering; the winner is the participant whose range contains `winner_ticket`.
 
 ---
 
 ## Input format
 
 ```csv
-username,ticket_count,from_ticket,to_ticket
-@alice,10,1,10
-@bob,15,11,25
-@charlie,13,26,38
+username,ticket_count
+@alice,10
+@bob,15
+@charlie,13
 ```
 
 Rules:
-- ticket ranges must be continuous and start at `1`
-- `ticket_count` must equal `(to_ticket - from_ticket + 1)`
+- `ticket_count` must be a positive integer
+- the input file may be unsorted
+- usernames are normalized (case-insensitive, `@` prefix enforced)
+- ticket ranges are derived deterministically by sorting usernames alphabetically
 - `participants.csv` is not tracked in git (local, per-giveaway input)
 
 An example file is provided as `participants.example.csv`.
@@ -68,7 +70,6 @@ seed_sha256=<sha256>
 total_tickets=38
 winner_ticket=<n>
 winner_username=<username>
-winner_ticket_range=<from>-<to>
 ```
 
 ---
@@ -76,8 +77,8 @@ winner_ticket_range=<from>-<to>
 ## Determinism
 
 - no local randomness is used
-- the Bitcoin block hash is external and unpredictable
-- the participants snapshot is hashed before selection
+- the Bitcoin block hash is an external, unpredictable source
+- the participants snapshot is canonicalized and hashed before selection
 
 Anyone can reproduce the result byte-for-byte using the same inputs.
 

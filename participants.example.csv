@@ -1,4 +1,4 @@
-username,ticket_count,from_ticket,to_ticket
-@alice,10,1,10
-@bob,15,11,25
-@charlie,13,26,38
+username,ticket_count
+@john,10
+@bob,15
+@charlie,13

@@ -45,81 +45,90 @@ def main() -> int:
     with open(csv_path, "rb") as f:
         csv_bytes = f.read()
 
-    # Compute snapshot hash and combined seed.
-    snapshot_hash = hashlib.sha256(csv_bytes).hexdigest()
-    seed_input = (block_hash + snapshot_hash).encode("utf-8")
-    seed = hashlib.sha256(seed_input).hexdigest()
+    # Compute snapshot hash and seed later from canonical participant data.
+    snapshot_hash = ""
+    seed = ""
+    canonical_csv_bytes = b""
 
-    # Parse participants and validate ticket coverage.
-    rows: list[tuple[str, int, int]] = []
+    # Parse participants and build deterministic ticket ranges.
+    # Expected CSV headers: username,ticket_count
+    # Notes:
+    # - input may be unsorted
+    # - usernames are normalized (trim, ensure leading '@', lowercase)
+    # - duplicate usernames are allowed and will be summed
+    # - canonical ordering is username ascending (case-insensitive via lowercase)
+
+    # Read and parse CSV as text.
     with open(csv_path, "r", newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
-        required = {"username", "from_ticket", "to_ticket"}
-        has_ticket_count = reader.fieldnames is not None and "ticket_count" in set(reader.fieldnames)
+        required = {"username", "ticket_count"}
         if reader.fieldnames is None or not required.issubset(set(reader.fieldnames)):
             print(
-                "Error: CSV must have headers: username,from_ticket,to_ticket (optional: ticket_count)",
+                "Error: CSV must have headers: username,ticket_count",
                 file=sys.stderr,
             )
             return 1
 
+        # Aggregate ticket counts per normalized username.
+        totals: dict[str, int] = {}
         for row in reader:
-            username = (row.get("username") or "").strip()
-            if not username:
+            raw_username = (row.get("username") or "").strip()
+            if not raw_username:
                 print("Error: username cannot be empty.", file=sys.stderr)
                 return 1
 
+            # Normalize: ensure '@' prefix and lowercase.
+            username = raw_username
+            if not username.startswith("@"):
+                username = "@" + username
+            username = username.lower().strip()
+
+            raw_tc = (row.get("ticket_count") or "").strip()
+            if not raw_tc:
+                print(f"Error: ticket_count is empty for {username}.", file=sys.stderr)
+                return 1
             try:
-                from_ticket = int(row["from_ticket"])
-                to_ticket = int(row["to_ticket"])
-            except (ValueError, TypeError, KeyError):
-                print("Error: from_ticket/to_ticket must be integers.", file=sys.stderr)
+                ticket_count = int(raw_tc)
+            except (ValueError, TypeError):
+                print(f"Error: ticket_count must be an integer for {username}.", file=sys.stderr)
                 return 1
 
-            if from_ticket < 1 or to_ticket < from_ticket:
-                print("Error: invalid ticket range (from_ticket must be >= 1 and <= to_ticket).", file=sys.stderr)
+            if ticket_count < 1:
+                print(f"Error: ticket_count must be >= 1 for {username}.", file=sys.stderr)
                 return 1
 
-            # Optional integrity check: ticket_count must match the range length.
-            if has_ticket_count:
-                raw_tc = (row.get("ticket_count") or "").strip()
-                if not raw_tc:
-                    print(f"Error: ticket_count is empty for {username}.", file=sys.stderr)
-                    return 1
-                try:
-                    ticket_count = int(raw_tc)
-                except (ValueError, TypeError):
-                    print(f"Error: ticket_count must be an integer for {username}.", file=sys.stderr)
-                    return 1
-                expected = to_ticket - from_ticket + 1
-                if ticket_count != expected:
-                    print(
-                        f"Error: ticket_count mismatch for {username} (got {ticket_count}, expected {expected}).",
-                        file=sys.stderr,
-                    )
-                    return 1
+            totals[username] = totals.get(username, 0) + ticket_count
 
-            rows.append((username, from_ticket, to_ticket))
-
-    if not rows:
+    if not totals:
         print("Error: participants.csv has no rows.", file=sys.stderr)
         return 1
 
-    # Ensure ranges are contiguous and non-overlapping: 1..total_tickets.
-    rows_sorted = sorted(rows, key=lambda r: r[1])
-    if rows_sorted[0][1] != 1:
-        print("Error: ticket ranges must start at 1.", file=sys.stderr)
-        return 1
+    # Canonical ordering: alphabetical by normalized username.
+    participants_sorted = sorted(totals.items(), key=lambda kv: kv[0])
 
-    prev_to = 0
-    for username, from_ticket, to_ticket in rows_sorted:
-        if from_ticket != prev_to + 1:
-            print("Error: ticket ranges must be contiguous with no gaps/overlaps.", file=sys.stderr)
-            return 1
-        prev_to = to_ticket
+    # Build canonical CSV bytes (used for snapshot hash) so ordering in the input file
+    # does not change the result.
+    canonical_lines = ["username,ticket_count\n"]
+    for uname, tc in participants_sorted:
+        canonical_lines.append(f"{uname},{tc}\n")
+    canonical_csv_bytes = "".join(canonical_lines).encode("utf-8")
 
-    total_tickets = prev_to
+    # Snapshot hash is computed from canonical bytes.
+    snapshot_hash = hashlib.sha256(canonical_csv_bytes).hexdigest()
+    seed_input = (block_hash + snapshot_hash).encode("utf-8")
+    seed = hashlib.sha256(seed_input).hexdigest()
+
+    # Build deterministic ticket ranges from canonical ordering.
+    rows_sorted: list[tuple[str, int, int]] = []
+    current = 1
+    for uname, tc in participants_sorted:
+        from_ticket = current
+        to_ticket = current + tc - 1
+        rows_sorted.append((uname, from_ticket, to_ticket))
+        current = to_ticket + 1
+
+    total_tickets = current - 1
 
     # Determine the winner ticket.
     winner_ticket = (int(seed, 16) % total_tickets) + 1
@@ -144,6 +153,7 @@ def main() -> int:
     _out("block_hash", block_hash)
     _out("participants_csv", os.path.basename(csv_path))
     _out("participants_csv_bytes", str(len(csv_bytes)))
+    _out("participants_canonical_bytes", str(len(canonical_csv_bytes)))
     _out("participants_csv_sha256", snapshot_hash)
     _out("seed_sha256", seed)
     _out("total_tickets", str(total_tickets))
