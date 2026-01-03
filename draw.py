@@ -13,9 +13,14 @@ def _out(key: str, value: str) -> None:
 
 
 def main() -> int:
-    # Require exactly one argument: 64 hex characters.
-    if len(sys.argv) != 2:
-        print("Usage: python3 . <64-hex-block-hash>  (or: python3 draw.py <64-hex-block-hash>)", file=sys.stderr)
+    # Args:
+    #   1) block hash (64 hex)
+    #   2) optional participants csv filename (default: participants.csv)
+    if len(sys.argv) not in (2, 3):
+        print(
+            "Usage: python3 draw.py <64-hex-btc-block-hash> [participants.csv]",
+            file=sys.stderr,
+        )
         return 1
 
     block_hash = sys.argv[1].strip().lower()
@@ -23,12 +28,18 @@ def main() -> int:
         print("Error: block_hash must be 64 hex chars.", file=sys.stderr)
         return 1
 
+    participants_filename = sys.argv[2].strip() if len(sys.argv) == 3 else "participants.csv"
+    if not participants_filename:
+        print("Error: participants CSV filename cannot be empty.", file=sys.stderr)
+        return 1
+
     # Read snapshot CSV bytes from the same folder.
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_path = os.path.join(base_dir, "participants.csv")
+    csv_path = os.path.join(base_dir, participants_filename)
 
     if not os.path.isfile(csv_path):
-        print(f"Error: missing participants.csv next to the tool: {csv_path}", file=sys.stderr)
+        print(f"Error: missing {participants_filename} next to the tool: {csv_path}", file=sys.stderr)
+        print("Tip: copy participants.example.csv to participants.csv (or pass a filename as 2nd arg).", file=sys.stderr)
         return 1
 
     with open(csv_path, "rb") as f:
@@ -45,8 +56,12 @@ def main() -> int:
         reader = csv.DictReader(f)
 
         required = {"username", "from_ticket", "to_ticket"}
+        has_ticket_count = reader.fieldnames is not None and "ticket_count" in set(reader.fieldnames)
         if reader.fieldnames is None or not required.issubset(set(reader.fieldnames)):
-            print("Error: CSV must have headers: username,from_ticket,to_ticket", file=sys.stderr)
+            print(
+                "Error: CSV must have headers: username,from_ticket,to_ticket (optional: ticket_count)",
+                file=sys.stderr,
+            )
             return 1
 
         for row in reader:
@@ -65,6 +80,25 @@ def main() -> int:
             if from_ticket < 1 or to_ticket < from_ticket:
                 print("Error: invalid ticket range (from_ticket must be >= 1 and <= to_ticket).", file=sys.stderr)
                 return 1
+
+            # Optional integrity check: ticket_count must match the range length.
+            if has_ticket_count:
+                raw_tc = (row.get("ticket_count") or "").strip()
+                if not raw_tc:
+                    print(f"Error: ticket_count is empty for {username}.", file=sys.stderr)
+                    return 1
+                try:
+                    ticket_count = int(raw_tc)
+                except (ValueError, TypeError):
+                    print(f"Error: ticket_count must be an integer for {username}.", file=sys.stderr)
+                    return 1
+                expected = to_ticket - from_ticket + 1
+                if ticket_count != expected:
+                    print(
+                        f"Error: ticket_count mismatch for {username} (got {ticket_count}, expected {expected}).",
+                        file=sys.stderr,
+                    )
+                    return 1
 
             rows.append((username, from_ticket, to_ticket))
 
