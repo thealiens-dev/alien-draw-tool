@@ -39,7 +39,7 @@ Rules:
 - `username` is treated as a generic identifier (trimmed only, case-sensitive)
 - duplicate usernames are not allowed (the tool will fail)
 - ticket ranges are derived deterministically from the canonical (sorted) snapshot
-- `participants.csv` is not tracked in git (local, per-giveaway input)
+- `participants.csv` is not tracked in git (local, per-draw input)
 
 An example file is provided as `participants.example.csv`.
 
@@ -48,8 +48,17 @@ An example file is provided as `participants.example.csv`.
 ## Usage
 
 ```bash
+# Run with an explicit participants file
+python3 draw.py <BTC_BLOCK_HASH> participants.example.csv
+```
+
+If the participants file argument is omitted, the tool defaults to `participants.csv`
+located next to the script.
+
+```bash
+# Optional convenience
 cp participants.example.csv participants.csv
-python3 draw.py <BTC_BLOCK_HASH> [participants.csv]
+python3 draw.py <BTC_BLOCK_HASH>
 ```
 
 ---
@@ -69,16 +78,16 @@ tool=alien-draw-tool
 version=1.0.0
 block_hash=00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d
 participants_csv=participants.example.csv
-participants_file_bytes=<n>
-participants_file_sha256=<sha256>
 canonical_snapshot=username,ticket_count (normalized + sorted)
-canonical_snapshot_bytes=<n>
-canonical_snapshot_sha256=<sha256>
-seed_sha256=<sha256>
+participants_file_bytes=50
+participants_file_sha256=73945614bc951e555d60e480af946c105a032965e8711a2355e402f551722b16
+canonical_snapshot_bytes=51
+canonical_snapshot_sha256=9d41533ede4ce04097234f69959d87d130122eaa622ef386b79dccb6d8144762
+seed_sha256=018dbfab7a0acc0051282294e89f20489bc4d5e1bd6670b5fd929276779ae857
 total_tickets=38
-winner_ticket=<n>
-winner_username=<username>
-winner_ticket_range=<from>-<to>
+winner_ticket=18
+winner_username=@charlie
+winner_ticket_range=16-28
 ```
 
 ---
