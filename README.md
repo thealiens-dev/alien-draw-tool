@@ -27,7 +27,7 @@ Ticket ranges are derived internally from the canonical ordering; the winner is 
 
 ```csv
 username,ticket_count
-@alice,10
+@john,10
 @bob,15
 @charlie,13
 ```
