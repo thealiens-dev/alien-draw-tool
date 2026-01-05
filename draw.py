@@ -4,6 +4,8 @@ import csv
 import hashlib
 import os
 import sys
+import urllib.error
+import urllib.request
 
 VERSION = "1.1.0"
 PROJECT = "The Aliens"
@@ -13,14 +15,47 @@ def _out(key: str, value: str) -> None:
     """Print a stable, machine-parseable key=value line to stdout."""
     print(f"{key}={value}")
 
+def _is_valid_block_hash(value: str) -> bool:
+    return len(value) == 64 and all(c in "0123456789abcdef" for c in value)
+
+
+def _resolve_block_hash_from_height(height: int) -> str | None:
+    url = f"https://mempool.space/api/block-height/{height}"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as response:
+            status = response.getcode()
+            if status != 200:
+                print(
+                    f"Error: failed to resolve block height via mempool.space (status {status})",
+                    file=sys.stderr,
+                )
+                return None
+            body = response.read().decode("utf-8", errors="replace").strip().lower()
+    except urllib.error.HTTPError as exc:
+        print(
+            f"Error: failed to resolve block height via mempool.space (status {exc.code})",
+            file=sys.stderr,
+        )
+        return None
+    except urllib.error.URLError:
+        print("Error: failed to resolve block height via mempool.space (network error)", file=sys.stderr)
+        return None
+
+    if not _is_valid_block_hash(body):
+        print("Error: provider returned invalid block hash", file=sys.stderr)
+        return None
+
+    return body
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="alien-draw-tool",
         description="Deterministic draw with no rerolls, no discretion and a verifiable input list.",
     )
-    parser.add_argument("block_hash", help="64-hex Bitcoin block hash")
     parser.add_argument("participants_file", nargs="?", default="participants.csv")
+    parser.add_argument("--block-hash", help="64-hex Bitcoin block hash")
+    parser.add_argument("--block-height", type=int, help="Bitcoin block height (int)")
     parser.add_argument(
         "--mode",
         choices=("uniform", "weighted"),
@@ -29,10 +64,32 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    block_hash = args.block_hash.strip().lower()
-    if len(block_hash) != 64 or any(c not in "0123456789abcdef" for c in block_hash):
-        print("Error: block_hash must be 64 hex chars.", file=sys.stderr)
+    if args.block_hash is None and args.block_height is None:
+        print("Error: Provide --block-hash or --block-height", file=sys.stderr)
         return 1
+    if args.block_hash is not None and args.block_height is not None:
+        print("Error: Provide only one: --block-hash or --block-height", file=sys.stderr)
+        return 1
+
+    block_source = "hash"
+    block_hash = ""
+    block_height = None
+
+    if args.block_hash is not None:
+        block_hash = args.block_hash.strip().lower()
+        if not _is_valid_block_hash(block_hash):
+            print("Error: block_hash must be 64 hex chars.", file=sys.stderr)
+            return 1
+    else:
+        block_source = "height"
+        block_height = args.block_height
+        if block_height is None:
+            print("Error: Provide --block-hash or --block-height", file=sys.stderr)
+            return 1
+        resolved = _resolve_block_hash_from_height(block_height)
+        if resolved is None:
+            return 1
+        block_hash = resolved
 
     participants_filename = args.participants_file.strip()
     if not participants_filename:
@@ -187,6 +244,10 @@ def main() -> int:
     _out("project", PROJECT)
     _out("tool", "alien-draw-tool")
     _out("version", VERSION)
+    _out("block_source", block_source)
+    if block_source == "height":
+        _out("block_height", str(block_height))
+        _out("block_height_provider", "mempool.space")
     _out("mode", args.mode)
     _out("block_hash", block_hash)
     _out("participants_file", os.path.basename(csv_path))
