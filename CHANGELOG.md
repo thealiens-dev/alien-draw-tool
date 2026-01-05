@@ -13,11 +13,13 @@ Added
 	•	project field added to proof output (project=The Aliens).
 	•	Added Apache License 2.0 for the CLI tool.
 	•	--block-height resolver via mempool.space.
+	•	status field and pending mode for future block heights (exit code 2).
 
 Changed
 	•	Default mode is now uniform.
 	•	Canonical snapshot is always normalized to username,ticket_count, including uniform mode (ticket_count = 1).
 	•	README updated with clear description of both modes and new usage examples.
+	•	block-height resolve 404 is now pending instead of a hard error.
 
 Breaking
 	•	Default mode changed from weighted to uniform.

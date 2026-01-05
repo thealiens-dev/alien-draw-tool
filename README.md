@@ -95,6 +95,8 @@ run with `--mode weighted` because the default mode is `uniform`.
 Note: The default mode is uniform. CSV files with ticket_count require --mode weighted.
 When using --block-height, the tool resolves the canonical block hash via mempool.space and prints it in the proof.
 Provide exactly one of --block-hash or --block-height.
+If the block height is in the future, the tool returns status=pending with exit code 2.
+status=final uses exit code 0; hard errors use exit code 1.
 
 ```bash
 # Optional convenience
@@ -118,6 +120,7 @@ Example output:
 project=The Aliens
 tool=alien-draw-tool
 version=1.1.0
+status=final
 block_source=hash
 mode=uniform
 block_hash=00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d
@@ -175,6 +178,9 @@ Anyone can reproduce the result byte-for-byte using the same inputs.
 
 When resolving a block height, the provider only maps height to hash; selection always uses the hash.
 If the provider is unavailable, provide the block hash directly via --block-hash.
+
+The CLI is the reference implementation; the proof output (key=value) is stable.
+Any change to the proof format requires a conscious decision and a changelog entry.
 
 ---
 

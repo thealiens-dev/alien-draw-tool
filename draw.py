@@ -21,33 +21,25 @@ def _is_valid_block_hash(value: str) -> bool:
     return len(value) == 64 and all(c in "0123456789abcdef" for c in value)
 
 
-def _resolve_block_hash_from_height(height: int) -> str | None:
+def _resolve_block_hash_from_height(height: int) -> tuple[str | None, int | None]:
     url = f"https://mempool.space/api/block-height/{height}"
     try:
         with urllib.request.urlopen(url, timeout=10) as response:
             status = response.getcode()
             if status != 200:
-                print(
-                    f"Error: failed to resolve block height via mempool.space (status {status})",
-                    file=sys.stderr,
-                )
-                return None
+                return None, status
             body = response.read().decode("utf-8", errors="replace").strip().lower()
     except urllib.error.HTTPError as exc:
-        print(
-            f"Error: failed to resolve block height via mempool.space (status {exc.code})",
-            file=sys.stderr,
-        )
-        return None
+        return None, exc.code
     except (urllib.error.URLError, http.client.RemoteDisconnected, socket.timeout):
         print("Error: failed to resolve block height via mempool.space (network error)", file=sys.stderr)
-        return None
+        return None, None
 
     if not _is_valid_block_hash(body):
         print("Error: provider returned invalid block hash", file=sys.stderr)
-        return None
+        return None, None
 
-    return body
+    return body, 200
 
 
 def main() -> int:
@@ -82,10 +74,6 @@ def main() -> int:
         if block_height is None:
             print("Error: Provide --block-hash or --block-height", file=sys.stderr)
             return 1
-        resolved = _resolve_block_hash_from_height(block_height)
-        if resolved is None:
-            return 1
-        block_hash = resolved
 
     participants_filename = args.participants_file.strip()
     if not participants_filename:
@@ -205,8 +193,6 @@ def main() -> int:
 
     # Canonical snapshot hash is computed from canonical bytes (trimmed + sorted).
     canonical_snapshot_sha256 = hashlib.sha256(canonical_csv_bytes).hexdigest()
-    seed_input = (block_hash + canonical_snapshot_sha256).encode("utf-8")
-    seed = hashlib.sha256(seed_input).hexdigest()
 
     # Build deterministic ticket ranges from canonical ordering.
     rows_sorted: list[tuple[str, int, int]] = []
@@ -219,33 +205,60 @@ def main() -> int:
 
     total_tickets = current - 1
 
-    # Determine the winner ticket.
-    winner_ticket = (int(seed, 16) % total_tickets) + 1
+    status = "final"
+    reason = ""
 
-    # Find the winner range.
-    winner_username = ""
-    winner_range = ""
-    for username, from_ticket, to_ticket in rows_sorted:
-        if from_ticket <= winner_ticket <= to_ticket:
-            winner_username = username
-            winner_range = f"{from_ticket}-{to_ticket}"
-            break
+    if block_source == "height":
+        resolved_hash, resolved_status = _resolve_block_hash_from_height(block_height)
+        if resolved_status == 404:
+            status = "pending"
+            reason = "block_not_found_yet"
+        elif resolved_status != 200:
+            if resolved_status is not None:
+                print(
+                    f"Error: failed to resolve block height via mempool.space (status {resolved_status})",
+                    file=sys.stderr,
+                )
+            return 1
+        else:
+            block_hash = resolved_hash or ""
 
-    if not winner_username:
-        # This should not happen if CSV ranges are correct, but guard anyway.
-        print("Error: winner ticket not found in any range (CSV ranges inconsistent).", file=sys.stderr)
-        return 1
+    if status == "final":
+        seed_input = (block_hash + canonical_snapshot_sha256).encode("utf-8")
+        seed = hashlib.sha256(seed_input).hexdigest()
+
+        # Determine the winner ticket.
+        winner_ticket = (int(seed, 16) % total_tickets) + 1
+
+        # Find the winner range.
+        winner_username = ""
+        winner_range = ""
+        for username, from_ticket, to_ticket in rows_sorted:
+            if from_ticket <= winner_ticket <= to_ticket:
+                winner_username = username
+                winner_range = f"{from_ticket}-{to_ticket}"
+                break
+
+        if not winner_username:
+            # This should not happen if CSV ranges are correct, but guard anyway.
+            print("Error: winner ticket not found in any range (CSV ranges inconsistent).", file=sys.stderr)
+            return 1
 
     # Print stable, machine-parseable outputs (key=value).
     _out("project", PROJECT)
     _out("tool", "alien-draw-tool")
     _out("version", VERSION)
+    _out("status", status)
     _out("block_source", block_source)
     if block_source == "height":
         _out("block_height", str(block_height))
         _out("block_height_provider", "mempool.space")
     _out("mode", args.mode)
-    _out("block_hash", block_hash)
+    if status == "pending":
+        _out("reason", reason)
+        _out("block_hash", "")
+    else:
+        _out("block_hash", block_hash)
     _out("participants_file", os.path.basename(csv_path))
     _out("canonical_snapshot", "username,ticket_count (normalized + sorted)")
 
@@ -257,12 +270,14 @@ def main() -> int:
     _out("canonical_snapshot_bytes", str(len(canonical_csv_bytes)))
     _out("canonical_snapshot_sha256", canonical_snapshot_sha256)
 
-    _out("seed_sha256", seed)
     _out("total_tickets", str(total_tickets))
-    _out("winner_ticket", str(winner_ticket))
-    _out("winner_username", winner_username)
-    _out("winner_ticket_range", winner_range)
-    return 0
+    if status == "final":
+        _out("seed_sha256", seed)
+        _out("winner_ticket", str(winner_ticket))
+        _out("winner_username", winner_username)
+        _out("winner_ticket_range", winner_range)
+        return 0
+    return 2
 
 
 if __name__ == "__main__":
