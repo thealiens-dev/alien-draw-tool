@@ -2,7 +2,9 @@
 import argparse
 import csv
 import hashlib
+import http.client
 import os
+import socket
 import sys
 import urllib.error
 import urllib.request
@@ -37,7 +39,7 @@ def _resolve_block_hash_from_height(height: int) -> str | None:
             file=sys.stderr,
         )
         return None
-    except urllib.error.URLError:
+    except (urllib.error.URLError, http.client.RemoteDisconnected, socket.timeout):
         print("Error: failed to resolve block height via mempool.space (network error)", file=sys.stderr)
         return None
 
@@ -54,8 +56,9 @@ def main() -> int:
         description="Deterministic draw with no rerolls, no discretion and a verifiable input list.",
     )
     parser.add_argument("participants_file", nargs="?", default="participants.csv")
-    parser.add_argument("--block-hash", help="64-hex Bitcoin block hash")
-    parser.add_argument("--block-height", type=int, help="Bitcoin block height (int)")
+    block_group = parser.add_mutually_exclusive_group(required=True)
+    block_group.add_argument("--block-hash", help="64-hex Bitcoin block hash")
+    block_group.add_argument("--block-height", type=int, help="Bitcoin block height (int)")
     parser.add_argument(
         "--mode",
         choices=("uniform", "weighted"),
@@ -63,13 +66,6 @@ def main() -> int:
         help="Draw mode: uniform (default, 1 ticket each) or weighted (CSV with ticket_count).",
     )
     args = parser.parse_args()
-
-    if args.block_hash is None and args.block_height is None:
-        print("Error: Provide --block-hash or --block-height", file=sys.stderr)
-        return 1
-    if args.block_hash is not None and args.block_height is not None:
-        print("Error: Provide only one: --block-hash or --block-height", file=sys.stderr)
-        return 1
 
     block_source = "hash"
     block_hash = ""
