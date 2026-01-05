@@ -80,12 +80,12 @@ Regardless of mode, the canonical snapshot is always built with the standard hea
 
 ```bash
 # Run with an explicit participants file
-python3 draw.py <BTC_BLOCK_HASH> participants.example.csv --mode weighted
+python3 draw.py --block-hash <BTC_BLOCK_HASH> participants.example.csv --mode weighted
 ```
 
 ```bash
 # Uniform mode (one username per line)
-python3 draw.py <BTC_BLOCK_HASH> participants.txt --mode uniform
+python3 draw.py --block-height <BLOCK_HEIGHT> participants.txt --mode uniform
 ```
 
 If the participants file argument is omitted, the tool defaults to `participants.csv`
@@ -93,11 +93,13 @@ located next to the script. Note: if that file is a CSV with `ticket_count`, you
 run with `--mode weighted` because the default mode is `uniform`.
 
 Note: The default mode is uniform. CSV files with ticket_count require --mode weighted.
+When using --block-height, the tool resolves the canonical block hash via mempool.space and prints it in the proof.
+Provide exactly one of --block-hash or --block-height.
 
 ```bash
 # Optional convenience
 cp participants.example.csv participants.csv
-python3 draw.py <BTC_BLOCK_HASH> participants.csv --mode weighted
+python3 draw.py --block-hash <BTC_BLOCK_HASH> participants.csv --mode weighted
 ```
 
 ---
@@ -107,7 +109,7 @@ python3 draw.py <BTC_BLOCK_HASH> participants.csv --mode weighted
 Example run using uniform mode:
 
 ```bash
-python3 draw.py 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d participants-uniform.csv --mode uniform
+python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d participants-uniform.csv --mode uniform
 ```
 
 Example output:
@@ -116,6 +118,7 @@ Example output:
 project=The Aliens
 tool=alien-draw-tool
 version=1.1.0
+block_source=hash
 mode=uniform
 block_hash=00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d
 participants_file=participants-uniform.csv
@@ -138,7 +141,7 @@ winner_ticket_range=2-2
 Example run using weighted mode:
 
 ```bash
-python3 draw.py 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d participants.example.csv --mode weighted
+python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d participants.example.csv --mode weighted
 ```
 
 Output differences vs uniform (same block hash, full proof omitted):
@@ -169,6 +172,9 @@ winner_ticket_range=16-28
 Selection depends on the canonical snapshot hash; the raw participants file hash is printed for auditing purposes only.
 
 Anyone can reproduce the result byte-for-byte using the same inputs.
+
+When resolving a block height, the provider only maps height to hash; selection always uses the hash.
+If the provider is unavailable, provide the block hash directly via --block-hash.
 
 ---
 

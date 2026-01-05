@@ -12,6 +12,7 @@ Added
 	•	Support for participant lists without ticket counts in uniform mode.
 	•	project field added to proof output (project=The Aliens).
 	•	Added Apache License 2.0 for the CLI tool.
+	•	--block-height resolver via mempool.space.
 
 Changed
 	•	Default mode is now uniform.
@@ -20,6 +21,7 @@ Changed
 
 Breaking
 	•	Default mode changed from weighted to uniform.
+	•	Block hash is now passed via --block-hash (no longer positional).
 
 Unchanged
 	•	Draw algorithm and cryptographic process remain unchanged.
