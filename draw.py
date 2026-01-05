@@ -6,6 +6,7 @@ import os
 import sys
 
 VERSION = "1.1.0"
+PROJECT = "The Aliens"
 
 
 def _out(key: str, value: str) -> None:
@@ -183,6 +184,7 @@ def main() -> int:
         return 1
 
     # Print stable, machine-parseable outputs (key=value).
+    _out("project", PROJECT)
     _out("tool", "alien-draw-tool")
     _out("version", VERSION)
     _out("mode", args.mode)

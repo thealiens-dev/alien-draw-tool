@@ -1,11 +1,17 @@
 Changelog
 
+Rules
+	•	Any change to output/proof, CLI flags, default modes, input parsing, or README examples must be recorded here.
+	•	Purely internal changes can be omitted unless they affect proof/format.
+
 [1.1.0] – 2026-01-05
 
 Added
 	•	New uniform mode for CLI draws (one username per line, equal weight).
 	•	mode field added to proof output (uniform / weighted).
 	•	Support for participant lists without ticket counts in uniform mode.
+	•	project field added to proof output (project=The Aliens).
+	•	Added Apache License 2.0 for the CLI tool.
 
 Changed
 	•	Default mode is now uniform.

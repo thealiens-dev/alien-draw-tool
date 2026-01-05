@@ -113,6 +113,7 @@ python3 draw.py 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d
 Example output:
 
 ```text
+project=The Aliens
 tool=alien-draw-tool
 version=1.1.0
 mode=uniform
@@ -143,6 +144,7 @@ python3 draw.py 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d
 Output differences vs uniform (same block hash, full proof omitted):
 
 ```text
+project=The Aliens
 mode=weighted
 participants_file=participants.example.csv
 participants_raw_file_bytes=50
@@ -171,3 +173,7 @@ Anyone can reproduce the result byte-for-byte using the same inputs.
 ---
 
 Part of **Alien Tools**.
+
+## License
+
+Apache License 2.0
