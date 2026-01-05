@@ -22,6 +22,8 @@ winner_ticket = (int(seed, 16) % total_tickets) + 1
 The canonical snapshot is built from trimmed `username,ticket_count` rows (whitespace trimmed only, case-sensitive) sorted lexicographically by `username` (standard string order - effectively alphabetical for typical identifiers).  
 Sorting happens *before* hashing, which means the input file may be in any order without affecting the result.
 
+The canonical snapshot always includes the header row username,ticket_count; implementations that accept header-less input must prepend this header before canonicalization to remain compatible.
+
 ---
 
 ## Input format
