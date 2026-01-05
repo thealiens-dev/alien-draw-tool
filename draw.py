@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+import argparse
 import csv
 import hashlib
 import os
 import sys
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 
 def _out(key: str, value: str) -> None:
@@ -13,22 +14,26 @@ def _out(key: str, value: str) -> None:
 
 
 def main() -> int:
-    # Args:
-    #   1) block hash (64 hex)
-    #   2) optional participants csv filename (default: participants.csv)
-    if len(sys.argv) not in (2, 3):
-        print(
-            "Usage: python3 draw.py <64-hex-btc-block-hash> [participants.csv]",
-            file=sys.stderr,
-        )
-        return 1
+    parser = argparse.ArgumentParser(
+        prog="alien-draw-tool",
+        description="Deterministic draw with no rerolls, no discretion and a verifiable input list.",
+    )
+    parser.add_argument("block_hash", help="64-hex Bitcoin block hash")
+    parser.add_argument("participants_file", nargs="?", default="participants.csv")
+    parser.add_argument(
+        "--mode",
+        choices=("uniform", "weighted"),
+        default="uniform",
+        help="Draw mode: uniform (default, 1 ticket each) or weighted (CSV with ticket_count).",
+    )
+    args = parser.parse_args()
 
-    block_hash = sys.argv[1].strip().lower()
+    block_hash = args.block_hash.strip().lower()
     if len(block_hash) != 64 or any(c not in "0123456789abcdef" for c in block_hash):
         print("Error: block_hash must be 64 hex chars.", file=sys.stderr)
         return 1
 
-    participants_filename = sys.argv[2].strip() if len(sys.argv) == 3 else "participants.csv"
+    participants_filename = args.participants_file.strip()
     if not participants_filename:
         print("Error: participants CSV filename cannot be empty.", file=sys.stderr)
         return 1
@@ -53,58 +58,75 @@ def main() -> int:
     # Compute snapshot hash and seed later from canonical participant data.
 
     # Parse participants and build deterministic ticket ranges.
-    # Expected CSV headers: username,ticket_count
     # Notes:
     # - input may be unsorted
     # - usernames are normalized (trim only; case-sensitive)
     # - duplicate usernames are not allowed (tool fails)
     # - canonical ordering is username ascending (case-sensitive)
 
-    # Read and parse CSV as text.
+    # Read and parse input as text.
     # Use utf-8-sig to tolerate UTF-8 BOM (common when CSVs come from Excel).
     # Initialize totals before try block
     totals: dict[str, int] = {}
     try:
         with open(csv_path, "r", newline="", encoding="utf-8-sig") as f:
-            reader = csv.DictReader(f)
+            if args.mode == "weighted":
+                reader = csv.DictReader(f)
 
-            required = {"username", "ticket_count"}
-            if reader.fieldnames is None or not required.issubset(set(reader.fieldnames)):
-                print(
-                    "Error: CSV must have headers: username,ticket_count",
-                    file=sys.stderr,
-                )
-                return 1
-
-            # Aggregate ticket counts per normalized username.
-            for row in reader:
-                raw_username = (row.get("username") or "").strip()
-                if not raw_username:
-                    print("Error: username cannot be empty.", file=sys.stderr)
+                required = {"username", "ticket_count"}
+                if reader.fieldnames is None or not required.issubset(set(reader.fieldnames)):
+                    print(
+                        "Error: CSV must have headers: username,ticket_count",
+                        file=sys.stderr,
+                    )
                     return 1
 
-                # Normalize: trim whitespace only (case-sensitive username preserved).
-                username = raw_username.strip()
+                # Aggregate ticket counts per normalized username.
+                for row in reader:
+                    raw_username = (row.get("username") or "").strip()
+                    if not raw_username:
+                        print("Error: username cannot be empty.", file=sys.stderr)
+                        return 1
 
-                raw_tc = (row.get("ticket_count") or "").strip()
-                if not raw_tc:
-                    print(f"Error: ticket_count is empty for {username}.", file=sys.stderr)
-                    return 1
-                try:
-                    ticket_count = int(raw_tc)
-                except (ValueError, TypeError):
-                    print(f"Error: ticket_count must be an integer for {username}.", file=sys.stderr)
-                    return 1
+                    # Normalize: trim whitespace only (case-sensitive username preserved).
+                    username = raw_username.strip()
 
-                if ticket_count < 1:
-                    print(f"Error: ticket_count must be >= 1 for {username}.", file=sys.stderr)
-                    return 1
+                    raw_tc = (row.get("ticket_count") or "").strip()
+                    if not raw_tc:
+                        print(f"Error: ticket_count is empty for {username}.", file=sys.stderr)
+                        return 1
+                    try:
+                        ticket_count = int(raw_tc)
+                    except (ValueError, TypeError):
+                        print(f"Error: ticket_count must be an integer for {username}.", file=sys.stderr)
+                        return 1
 
-                if username in totals:
-                    print(f"Error: duplicate username not allowed: {username}.", file=sys.stderr)
-                    return 1
+                    if ticket_count < 1:
+                        print(f"Error: ticket_count must be >= 1 for {username}.", file=sys.stderr)
+                        return 1
 
-                totals[username] = ticket_count
+                    if username in totals:
+                        print(f"Error: duplicate username not allowed: {username}.", file=sys.stderr)
+                        return 1
+
+                    totals[username] = ticket_count
+            else:
+                first_line = True
+                for line in f:
+                    username = line.strip()
+                    if not username:
+                        continue
+                    if first_line and username == "username":
+                        first_line = False
+                        continue
+                    first_line = False
+                    if "," in username:
+                        print("Error: uniform mode expects one username per line (no commas).", file=sys.stderr)
+                        return 1
+                    if username in totals:
+                        print(f"Error: duplicate username not allowed: {username}.", file=sys.stderr)
+                        return 1
+                    totals[username] = 1
     except UnicodeDecodeError:
         print(
             f"Error: cannot read participants file as UTF-8: {os.path.basename(csv_path)} "
@@ -163,6 +185,7 @@ def main() -> int:
     # Print stable, machine-parseable outputs (key=value).
     _out("tool", "alien-draw-tool")
     _out("version", VERSION)
+    _out("mode", args.mode)
     _out("block_hash", block_hash)
     _out("participants_file", os.path.basename(csv_path))
     _out("canonical_snapshot", "username,ticket_count (normalized + sorted)")
