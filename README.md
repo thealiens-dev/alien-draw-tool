@@ -54,8 +54,8 @@ The CLI supports two explicit draw modes:
 
 | Mode | Input format | Default |
 | --- | --- | --- |
-| uniform | One username per line (no commas); optional first line `username` is ignored | Yes |
-| weighted | CSV with `username,ticket_count` header | No |
+| uniform | One username per line (no commas); optional first line username is ignored | Yes |
+| weighted | CSV with username,ticket_count header | No |
 
 ### weighted
 
