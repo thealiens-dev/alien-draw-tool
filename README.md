@@ -60,6 +60,13 @@ Modes:
 
 Weighted draws require a CSV file with the `username,ticket_count` header.
 
+```csv
+username,ticket_count
+john,10
+bob,15
+charlie,13
+```
+
 ### uniform (default)
 
 Uniform draws require one username per line (no commas). Each participant gets exactly 1 ticket. A single
