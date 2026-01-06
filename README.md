@@ -102,12 +102,6 @@ Notes:
 - Future block height returns `status=pending` with exit code 2. `status=final` uses exit code 0; hard errors use exit code 1.
 - If the participants file argument is omitted, the tool defaults to `participants.csv` next to the script.
 
-```bash
-# Optional convenience
-cp participants-weighted.example.csv participants.csv
-python3 draw.py --block-hash <BTC_BLOCK_HASH> --mode weighted participants.csv
-```
-
 ---
 
 ## Example (uniform, primary)
