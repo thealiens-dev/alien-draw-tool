@@ -112,7 +112,7 @@ python3 draw.py --block-hash <BTC_BLOCK_HASH> participants.csv --mode weighted
 Example run using uniform mode:
 
 ```bash
-python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d participants-uniform.csv --mode uniform
+python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d tests/fixtures/vector-uniform.txt --mode uniform
 ```
 
 Example output:
@@ -125,17 +125,17 @@ status=final
 block_source=hash
 mode=uniform
 block_hash=00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d
-participants_file=participants-uniform.csv
+participants_file=vector-uniform.txt
 canonical_snapshot=username,ticket_count (normalized + sorted)
-participants_raw_file_bytes=42
-participants_raw_file_sha256=4d6e1b3e6c5b0f3f4b0d0f6f1b9a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a
-canonical_snapshot_bytes=56
-canonical_snapshot_sha256=1f2e3d4c5b6a79808f9e0d1c2b3a4958675647382910a1b2c3d4e5f60718293a
-seed_sha256=9a8b7c6d5e4f32100123456789abcdef0123456789abcdef0123456789abcdef
-total_tickets=3
-winner_ticket=2
-winner_username=@bob
-winner_ticket_range=2-2
+participants_raw_file_bytes=1409
+participants_raw_file_sha256=4f21575ee279c0025d3e9112fbf0e334f4ced8d3ea8ec031c29cf2ff326f2343
+canonical_snapshot_bytes=1622
+canonical_snapshot_sha256=0aa72e324420b5b7674528e0c61abd1fc0b4132dcf47d8d26bf044b33888351f
+seed_sha256=672f59548cd61b97fec5fbfc4083b2849c945ca3375b035ac9d82ff1d66fa791
+total_tickets=100
+winner_ticket=90
+winner_username=@carbon-echo
+winner_ticket_range=90-90
 ```
 
 ---
@@ -145,23 +145,30 @@ winner_ticket_range=2-2
 Example run using weighted mode:
 
 ```bash
-python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d participants.example.csv --mode weighted
+python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d tests/fixtures/vector-weighted.csv --mode weighted
 ```
 
-Output differences vs uniform (same block hash, full proof omitted):
+Example output:
 
 ```text
 project=The Aliens
+tool=alien-draw-tool
+version=1.1.0
+status=final
+block_source=hash
 mode=weighted
-participants_file=participants.example.csv
-participants_raw_file_bytes=50
-participants_raw_file_sha256=73945614bc951e555d60e480af946c105a032965e8711a2355e402f551722b16
-canonical_snapshot_sha256=9d41533ede4ce04097234f69959d87d130122eaa622ef386b79dccb6d8144762
-seed_sha256=018dbfab7a0acc0051282294e89f20489bc4d5e1bd6670b5fd929276779ae857
-total_tickets=38
-winner_ticket=18
-winner_username=charlie
-winner_ticket_range=16-28
+block_hash=00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d
+participants_file=vector-weighted.csv
+canonical_snapshot=username,ticket_count (normalized + sorted)
+participants_raw_file_bytes=1632
+participants_raw_file_sha256=6459f3441742dddb0be650d1c13b6ef56e04a6c90f1712d62e649b2039d7a60b
+canonical_snapshot_bytes=1632
+canonical_snapshot_sha256=741ee72cdbf6516bc552135ad5b4bb4ae5240ef722240b8c78a289b91e8574dd
+seed_sha256=d53a7c824741320cc0584a12d6ba97238f4286593bf75f0945e37fd2cacc5e28
+total_tickets=550
+winner_ticket=67
+winner_username=@ancient-beacon
+winner_ticket_range=66-67
 ```
 
 ---

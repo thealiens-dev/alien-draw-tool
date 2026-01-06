@@ -9,7 +9,7 @@
 
 ### Added
 
-- –
+- Updated test vectors with 100-user fixtures for uniform and weighted modes.
 
 ### Changed
 

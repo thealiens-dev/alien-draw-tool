@@ -9,11 +9,11 @@
     },
     "expected": {
       "status": "ok",
-      "canonical_snapshot_sha256": "fd6715d1bc2ccbb164674970d6fd04685f7585b5cd3334bb2d5a83dbca002222",
-      "seed_sha256": "6e001bb7fcc96fdc6e2b79686f8e5942d173ed0154d204f105dfdddd069be4c6",
-      "total_tickets": "4",
-      "winner_ticket": "3",
-      "winner_username": "@charlie"
+      "canonical_snapshot_sha256": "0aa72e324420b5b7674528e0c61abd1fc0b4132dcf47d8d26bf044b33888351f",
+      "seed_sha256": "672f59548cd61b97fec5fbfc4083b2849c945ca3375b035ac9d82ff1d66fa791",
+      "total_tickets": "100",
+      "winner_ticket": "90",
+      "winner_username": "@carbon-echo"
     }
   },
   {
@@ -26,11 +26,11 @@
     },
     "expected": {
       "status": "ok",
-      "canonical_snapshot_sha256": "198d1dde777b49e61a7f92d3d8d9f1346f3f601938355e76ccc98cbc859ea100",
-      "seed_sha256": "beaa3f4083373358cbf52bd8a1cda08a88512649fb822e5a288da360615392e6",
-      "total_tickets": "11",
-      "winner_ticket": "10",
-      "winner_username": "@charlie"
+      "canonical_snapshot_sha256": "741ee72cdbf6516bc552135ad5b4bb4ae5240ef722240b8c78a289b91e8574dd",
+      "seed_sha256": "d53a7c824741320cc0584a12d6ba97238f4286593bf75f0945e37fd2cacc5e28",
+      "total_tickets": "550",
+      "winner_ticket": "67",
+      "winner_username": "@ancient-beacon"
     }
   },
   {
@@ -44,11 +44,11 @@
     },
     "expected": {
       "status": "ok",
-      "canonical_snapshot_sha256": "fd6715d1bc2ccbb164674970d6fd04685f7585b5cd3334bb2d5a83dbca002222",
-      "seed_sha256": "69dd5a9f6df366479ac684b836dfcafc4105f5d6c3ebd26a53ea3e22ecff2e2a",
-      "total_tickets": "4",
-      "winner_ticket": "3",
-      "winner_username": "@charlie"
+      "canonical_snapshot_sha256": "0aa72e324420b5b7674528e0c61abd1fc0b4132dcf47d8d26bf044b33888351f",
+      "seed_sha256": "c07be78bc4982189e5c6fd5ffdb1204012af828952485df6e7a8c6b008ff68a5",
+      "total_tickets": "100",
+      "winner_ticket": "38",
+      "winner_username": "@austere-cradle"
     }
   },
   {
@@ -63,8 +63,8 @@
       "status": "pending",
       "reason": "block_not_found_yet",
       "block_hash": "",
-      "canonical_snapshot_sha256": "198d1dde777b49e61a7f92d3d8d9f1346f3f601938355e76ccc98cbc859ea100",
-      "total_tickets": "11"
+      "canonical_snapshot_sha256": "741ee72cdbf6516bc552135ad5b4bb4ae5240ef722240b8c78a289b91e8574dd",
+      "total_tickets": "550"
     }
   }
 ]
