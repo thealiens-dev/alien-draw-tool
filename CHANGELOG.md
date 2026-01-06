@@ -15,6 +15,7 @@
 
 ### Changed
 
+- Require at least two unique usernames to run a draw.
 - README examples updated to full, standalone proof outputs using the new fixtures.
 - README clarified that uniform file extensions are not validated (content-only).
 - CHANGELOG formatting standardized for GitHub Preview (headings + Markdown lists).

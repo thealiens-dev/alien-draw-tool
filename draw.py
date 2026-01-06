@@ -184,6 +184,12 @@ def main() -> int:
     if not totals:
         print(f"Error: participants file has no rows: {os.path.basename(csv_path)}", file=sys.stderr)
         return 1
+    if len(totals) < 2:
+        print(
+            f"Error: participants file must include at least two usernames: {os.path.basename(csv_path)}",
+            file=sys.stderr,
+        )
+        return 1
 
     # Canonical ordering: lexicographic by username (case-sensitive).
     participants_sorted = sorted(totals.items(), key=lambda kv: kv[0])

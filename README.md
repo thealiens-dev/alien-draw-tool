@@ -80,6 +80,7 @@ The file extension is not validated; only the content format matters.
 ```
 
 Regardless of mode, the canonical snapshot is always built with the standard header and sorted.
+At least two unique usernames are required.
 
 ---
 
