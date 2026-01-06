@@ -52,10 +52,9 @@ Example files are provided as `participants-weighted.example.csv` and `participa
 
 The CLI supports two explicit draw modes:
 
-| Mode | Input format | Default |
-| --- | --- | --- |
-| weighted | CSV with username,ticket_count header | No |
-| uniform | One username per line (no commas); optional first line username is ignored | Yes |
+Modes:
+- weighted: CSV with username,ticket_count header (default: No)
+- uniform: One username per line (no commas); optional first line username is ignored (default: Yes)
 
 ### weighted
 
