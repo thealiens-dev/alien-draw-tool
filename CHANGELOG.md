@@ -5,15 +5,20 @@
 - Any change to output/proof, CLI flags, default modes, input parsing, or README examples must be recorded here.
 - Purely internal changes can be omitted unless they affect proof/format.
 
-## [Unreleased]
+## [1.1.1] – 2026-01-06
 
 ### Added
 
-- Updated test vectors with 100-user fixtures for uniform and weighted modes.
+- GitHub Actions workflow to run test vectors on every push.
+- 100-user test vector fixtures for uniform and weighted modes.
+- New test vector cases (uniform + block_hash, weighted + block_hash, uniform + block_height, pending block_height).
 
 ### Changed
 
-- –
+- README examples updated to full, standalone proof outputs using the new fixtures.
+- README clarified that uniform file extensions are not validated (content-only).
+- CHANGELOG formatting standardized for GitHub Preview (headings + Markdown lists).
+- .gitignore now ignores `local/` instead of `participants*.csv`.
 
 ### Breaking
 

@@ -9,7 +9,7 @@ import sys
 import urllib.error
 import urllib.request
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 PROJECT = "The Aliens"
 
 

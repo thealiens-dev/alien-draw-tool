@@ -120,7 +120,7 @@ Example output:
 ```text
 project=The Aliens
 tool=alien-draw-tool
-version=1.1.0
+version=1.1.1
 status=final
 block_source=hash
 mode=uniform
@@ -153,7 +153,7 @@ Example output:
 ```text
 project=The Aliens
 tool=alien-draw-tool
-version=1.1.0
+version=1.1.1
 status=final
 block_source=hash
 mode=weighted
