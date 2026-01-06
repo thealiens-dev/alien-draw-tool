@@ -86,7 +86,11 @@ def main() -> int:
 
     if not os.path.isfile(csv_path):
         print(f"Error: missing {participants_filename} next to the tool: {csv_path}", file=sys.stderr)
-        print("Tip: copy participants.example.csv to participants.csv (or pass a filename as 2nd arg).", file=sys.stderr)
+        print(
+            "Tip: copy participants-weighted.example.csv or participants-uniform.example.txt next to the tool "
+            "(or pass a filename as the participants argument).",
+            file=sys.stderr,
+        )
         return 1
 
     with open(csv_path, "rb") as f:

@@ -44,7 +44,7 @@ charlie,13
 - duplicate usernames are not allowed (the tool will fail)
 - ticket ranges are derived deterministically from the canonical (sorted) snapshot
 
-An example file is provided as `participants.example.csv`.
+Example files are provided as `participants-weighted.example.csv` and `participants-uniform.example.txt`.
 
 ---
 
@@ -54,8 +54,8 @@ The CLI supports two explicit draw modes:
 
 | Mode | Input format | Default |
 | --- | --- | --- |
-| uniform | One username per line (no commas); optional first line username is ignored | Yes |
 | weighted | CSV with username,ticket_count header | No |
+| uniform | One username per line (no commas); optional first line username is ignored | Yes |
 
 ### weighted
 
@@ -80,29 +80,26 @@ Regardless of mode, the canonical snapshot is always built with the standard hea
 ## Usage
 
 ```bash
-# Run with an explicit participants file
-python3 draw.py --block-hash <BTC_BLOCK_HASH> participants.example.csv --mode weighted
+# Weighted mode (CSV with ticket_count)
+python3 draw.py --block-hash <BTC_BLOCK_HASH> --mode weighted participants-weighted.example.csv
 ```
 
 ```bash
 # Uniform mode (one username per line)
-python3 draw.py --block-height <BLOCK_HEIGHT> participants.txt --mode uniform
+python3 draw.py --block-height <BLOCK_HEIGHT> --mode uniform participants-uniform.example.txt
 ```
 
-If the participants file argument is omitted, the tool defaults to `participants.csv`
-located next to the script. Note: if that file is a CSV with `ticket_count`, you must
-run with `--mode weighted` because the default mode is `uniform`.
-
-Note: The default mode is uniform. CSV files with ticket_count require --mode weighted.
-When using --block-height, the tool resolves the canonical block hash via mempool.space and prints it in the proof.
-Provide exactly one of --block-hash or --block-height.
-If the block height is in the future, the tool returns status=pending with exit code 2.
-status=final uses exit code 0; hard errors use exit code 1.
+Notes:
+- Provide exactly one of `--block-hash` or `--block-height`.
+- The default mode is `uniform`. CSV files with `ticket_count` require `--mode weighted`.
+- When using `--block-height`, the tool resolves the canonical block hash via mempool.space and prints it in the proof.
+- Future block height returns `status=pending` with exit code 2. `status=final` uses exit code 0; hard errors use exit code 1.
+- If the participants file argument is omitted, the tool defaults to `participants.csv` next to the script.
 
 ```bash
 # Optional convenience
-cp participants.example.csv participants.csv
-python3 draw.py --block-hash <BTC_BLOCK_HASH> participants.csv --mode weighted
+cp participants-weighted.example.csv participants.csv
+python3 draw.py --block-hash <BTC_BLOCK_HASH> --mode weighted participants.csv
 ```
 
 ---
@@ -112,7 +109,7 @@ python3 draw.py --block-hash <BTC_BLOCK_HASH> participants.csv --mode weighted
 Example run using uniform mode:
 
 ```bash
-python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d tests/fixtures/vector-uniform.txt --mode uniform
+python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d --mode uniform tests/fixtures/vector-uniform.txt
 ```
 
 Example output:
@@ -145,7 +142,7 @@ winner_ticket_range=90-90
 Example run using weighted mode:
 
 ```bash
-python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d tests/fixtures/vector-weighted.csv --mode weighted
+python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d --mode weighted tests/fixtures/vector-weighted.csv
 ```
 
 Example output:
