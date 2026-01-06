@@ -65,6 +65,7 @@ Weighted draws require a CSV file with the `username,ticket_count` header.
 
 Uniform draws require one username per line (no commas). Each participant gets exactly 1 ticket. A single
 header line `username` is allowed and ignored if present.
+The file extension is not validated; only the content format matters.
 
 ```text
 @alice
