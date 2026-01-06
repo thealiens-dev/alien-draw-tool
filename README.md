@@ -28,8 +28,8 @@ The canonical snapshot always includes the header row username,ticket_count; imp
 
 ## Input format
 
-This section describes the `weighted` mode input format (CSV with `ticket_count`).
-In `uniform` mode, all participants implicitly receive exactly one ticket.
+This section describes the weighted mode input format (CSV with `ticket_count`).
+In uniform mode, all participants implicitly receive exactly one ticket.
 
 ```csv
 username,ticket_count
@@ -91,7 +91,7 @@ python3 draw.py --block-height <BLOCK_HEIGHT> --mode uniform participants-unifor
 
 Notes:
 - Provide exactly one of `--block-hash` or `--block-height`.
-- The default mode is `uniform`. CSV files with `ticket_count` require `--mode weighted`.
+- The default mode is uniform. CSV files with `ticket_count` require `--mode weighted`.
 - When using `--block-height`, the tool resolves the canonical block hash via mempool.space and prints it in the proof.
 - Future block height returns `status=pending` with exit code 2. `status=final` uses exit code 0; hard errors use exit code 1.
 - If the participants file argument is omitted, the tool defaults to `participants.csv` next to the script.
