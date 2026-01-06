@@ -4,6 +4,20 @@ Rules
 	•	Any change to output/proof, CLI flags, default modes, input parsing, or README examples must be recorded here.
 	•	Purely internal changes can be omitted unless they affect proof/format.
 
+[Unreleased]
+
+Added
+	•	–
+
+Changed
+	•	–
+
+Breaking
+	•	–
+
+Unchanged
+	•	–
+
 [1.1.0] – 2026-01-05
 
 Added
@@ -14,6 +28,7 @@ Added
 	•	Added Apache License 2.0 for the CLI tool.
 	•	--block-height resolver via mempool.space.
 	•	status field and pending mode for future block heights (exit code 2).
+	•	Test vectors to lock deterministic CLI outputs.
 
 Changed
 	•	Default mode is now uniform.

@@ -184,6 +184,21 @@ Any change to the proof format requires a conscious decision and a changelog ent
 
 ---
 
+## Test Vectors
+
+Golden test vectors lock the current deterministic outputs and prevent accidental changes.
+They are the source of truth for expected results.
+
+Run locally:
+
+```bash
+python3 tests/test_vectors.py
+```
+
+If output changes are intentional, update `tests/test_vectors.json` and record the change in `CHANGELOG.md`.
+
+---
+
 Part of **Alien Tools**.
 
 ## License

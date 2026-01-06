@@ -1,0 +1,70 @@
+[
+  {
+    "name": "uniform_block_hash",
+    "input": {
+      "mode": "uniform",
+      "block_source": "hash",
+      "block_hash": "00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d",
+      "participants_file": "participants-uniform.csv"
+    },
+    "expected": {
+      "status": "ok",
+      "canonical_snapshot_sha256": "865318468be8d02874b4c16b595bc967605fb6249b27c553d49b66d5e9610e16",
+      "seed_sha256": "1b9407a4139934d827166d2801145f7f9e3089b7e5f0fd232fe9de8927083f64",
+      "total_tickets": "10",
+      "winner_ticket": "7",
+      "winner_username": "@emergeen"
+    }
+  },
+  {
+    "name": "weighted_block_hash",
+    "input": {
+      "mode": "weighted",
+      "block_source": "hash",
+      "block_hash": "00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d",
+      "participants_file": "participants-weighted.csv"
+    },
+    "expected": {
+      "status": "ok",
+      "canonical_snapshot_sha256": "ac98c5365004c2142d7088293f2457309ba2b89fc03c4ffbf3c6394c42d563ab",
+      "seed_sha256": "5dcfdcb8502a403d87a437f13c6301a51016af96dbcfef8c935fa9af6f61d912",
+      "total_tickets": "121",
+      "winner_ticket": "17",
+      "winner_username": "@Markinatrail"
+    }
+  },
+  {
+    "name": "uniform_block_height_resolved",
+    "input": {
+      "mode": "uniform",
+      "block_source": "height",
+      "block_height": 800000,
+      "block_hash": "00000000000000000002a7c4c1e48d76c5a37902165a270156b7a8d72728a054",
+      "participants_file": "participants-uniform.csv"
+    },
+    "expected": {
+      "status": "ok",
+      "canonical_snapshot_sha256": "865318468be8d02874b4c16b595bc967605fb6249b27c553d49b66d5e9610e16",
+      "seed_sha256": "917372d2def624cb00c3c5ef2e56d3fbf12136ffd0e048374e6a78d12b2cdc84",
+      "total_tickets": "10",
+      "winner_ticket": "1",
+      "winner_username": "@JohnAtsula33"
+    }
+  },
+  {
+    "name": "block_height_pending",
+    "input": {
+      "mode": "weighted",
+      "block_source": "height",
+      "block_height": 99999999,
+      "participants_file": "participants-weighted.csv"
+    },
+    "expected": {
+      "status": "pending",
+      "reason": "block_not_found_yet",
+      "block_hash": "",
+      "canonical_snapshot_sha256": "ac98c5365004c2142d7088293f2457309ba2b89fc03c4ffbf3c6394c42d563ab",
+      "total_tickets": "121"
+    }
+  }
+]
