@@ -22,14 +22,6 @@
 - CHANGELOG formatting standardized for GitHub Preview (headings + Markdown lists).
 - .gitignore now ignores `local/` instead of `participants*.csv`.
 
-### Breaking
-
-- –
-
-### Unchanged
-
-- –
-
 ## [1.1.0] – 2026-01-05
 
 ### Added
