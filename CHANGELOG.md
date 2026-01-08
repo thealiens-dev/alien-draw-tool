@@ -15,7 +15,7 @@
 
 ### Changed
 
-- README wording clarified to explicitly describe the tool as a deterministic random picker based on Bitcoin block entropy.
+- README positioning clarified (tool naming aligned with common random picker terminology).
 - Require at least two unique usernames to run a draw.
 - README examples updated to full, standalone proof outputs using the new fixtures.
 - README clarified that uniform file extensions are not validated (content-only).
