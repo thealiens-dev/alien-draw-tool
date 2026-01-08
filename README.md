@@ -1,8 +1,9 @@
 # Alien Draw Tool
 
-Deterministic and publicly verifiable draw mechanism used by **The Aliens**.
+Deterministic and publicly verifiable random picker based on Bitcoin block entropy, used by **The Aliens**.
+This tool selects exactly one winner in a reproducible way that anyone can independently verify.
 
-The tool selects exactly one winner based on:
+Winner selection is based on:
 - a public Bitcoin block hash
 - a finalized participants snapshot (`participants.csv` by default)
 

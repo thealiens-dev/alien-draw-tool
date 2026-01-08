@@ -5,7 +5,7 @@
 - Any change to output/proof, CLI flags, default modes, input parsing, or README examples must be recorded here.
 - Purely internal changes can be omitted unless they affect proof/format.
 
-## [1.1.1] – 2026-01-06
+## [1.1.2] – 2026-01-08
 
 ### Added
 
@@ -15,6 +15,7 @@
 
 ### Changed
 
+- README wording clarified to explicitly describe the tool as a deterministic random picker based on Bitcoin block entropy.
 - Require at least two unique usernames to run a draw.
 - README examples updated to full, standalone proof outputs using the new fixtures.
 - README clarified that uniform file extensions are not validated (content-only).
