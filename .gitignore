@@ -8,3 +8,10 @@ __pycache__/
 
 # others
 local/
+node_modules/
+.next/
+dist/
+build/
+.env
+.env.local
+.env.*.local
