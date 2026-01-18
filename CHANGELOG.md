@@ -43,7 +43,6 @@
 
 ### Changed
 
-- Default mode is now uniform.
 - Canonical snapshot is always normalized to username,ticket_count, including uniform mode (ticket_count = 1).
 - README updated with clear description of both modes and new usage examples.
 - block-height resolve 404 is now pending instead of a hard error.
