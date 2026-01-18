@@ -9,6 +9,11 @@ Winner selection is based on:
 
 Given the same inputs, the output is always identical and can be independently reproduced.
 
+## Requirements
+
+- Python 3.9+
+- Network access to mempool.space (only when using `--block-height`)
+
 ---
 
 ## Algorithm
@@ -119,7 +124,7 @@ Example output:
 ```text
 project=The Aliens
 tool=alien-draw-tool
-version=1.1.1
+version=1.1.3
 status=final
 block_source=hash
 mode=uniform
@@ -152,7 +157,7 @@ Example output:
 ```text
 project=The Aliens
 tool=alien-draw-tool
-version=1.1.1
+version=1.1.3
 status=final
 block_source=hash
 mode=weighted

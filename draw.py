@@ -8,6 +8,7 @@ import socket
 import sys
 import urllib.error
 import urllib.request
+from typing import Optional
 
 VERSION = "1.1.3"
 PROJECT = "The Aliens"
@@ -21,7 +22,7 @@ def _is_valid_block_hash(value: str) -> bool:
     return len(value) == 64 and all(c in "0123456789abcdef" for c in value)
 
 
-def _resolve_block_hash_from_height(height: int) -> tuple[str | None, int | None]:
+def _resolve_block_hash_from_height(height: int) -> tuple[Optional[str], Optional[int]]:
     url = f"https://mempool.space/api/block-height/{height}"
     try:
         with urllib.request.urlopen(url, timeout=10) as response:

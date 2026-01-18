@@ -5,7 +5,13 @@
 - Any change to output/proof, CLI flags, default modes, input parsing, or README examples must be recorded here.
 - Purely internal changes can be omitted unless they affect proof/format.
 
-## [1.1.2] – 2026-01-08
+## [1.1.3] - 2026-01-18
+
+### Fixed
+
+- Python 3.9 compatibility: replaced PEP 604 union type syntax (`str | None`) with `typing.Optional` in type hints.
+
+## [1.1.2] - 2026-01-08
 
 ### Added
 
@@ -22,7 +28,7 @@
 - CHANGELOG formatting standardized for GitHub Preview (headings + Markdown lists).
 - .gitignore now ignores `local/` instead of `participants*.csv`.
 
-## [1.1.0] – 2026-01-05
+## [1.1.0] - 2026-01-05
 
 ### Added
 
