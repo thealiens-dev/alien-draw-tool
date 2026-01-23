@@ -12,13 +12,13 @@
       "status": "ok",
       "participants_count": "100",
       "winners_count": "1",
-      "winners_usernames": "@carbon-echo",
-      "winners_tickets": "90",
-      "winners_ticket_ranges": "90-90",
+      "winners_usernames": "binary-beacon",
+      "winners_tickets": "44",
+      "winners_ticket_ranges": "44-44",
       "total_tickets_rounds": "100",
-      "canonical_snapshot_sha256_rounds": "0aa72e324420b5b7674528e0c61abd1fc0b4132dcf47d8d26bf044b33888351f",
-      "canonical_snapshot_bytes_rounds": "1622",
-      "seeds_sha256": "672f59548cd61b97fec5fbfc4083b2849c945ca3375b035ac9d82ff1d66fa791"
+      "canonical_snapshot_sha256_rounds": "7d407a2e2ac897526d972856e1b2efa3318e86e8a4fe52eb3be4faf3e72abc0d",
+      "canonical_snapshot_bytes_rounds": "1522",
+      "seeds_sha256": "3899e115af6f863ffada03fcb8aba47ef852e91b1eeaab1593bd9b983d6f31a7"
     }
   },
   {
@@ -34,13 +34,13 @@
       "status": "ok",
       "participants_count": "100",
       "winners_count": "1",
-      "winners_usernames": "@ancient-beacon",
-      "winners_tickets": "67",
-      "winners_ticket_ranges": "66-67",
+      "winners_usernames": "ancient-circuit",
+      "winners_tickets": "85",
+      "winners_ticket_ranges": "77-85",
       "total_tickets_rounds": "550",
-      "canonical_snapshot_sha256_rounds": "741ee72cdbf6516bc552135ad5b4bb4ae5240ef722240b8c78a289b91e8574dd",
-      "canonical_snapshot_bytes_rounds": "1632",
-      "seeds_sha256": "d53a7c824741320cc0584a12d6ba97238f4286593bf75f0945e37fd2cacc5e28"
+      "canonical_snapshot_sha256_rounds": "e2aab16d8dc600a074fb28cd095bfb138cce0b80064300f7efb2be29092502a6",
+      "canonical_snapshot_bytes_rounds": "1532",
+      "seeds_sha256": "dffa7821ec8aefa63afc0ae1d28ab2c8d684a3f3e114bea10ee23006ff597b36"
     }
   },
   {
@@ -57,13 +57,13 @@
       "status": "ok",
       "participants_count": "100",
       "winners_count": "1",
-      "winners_usernames": "@austere-cradle",
-      "winners_tickets": "38",
-      "winners_ticket_ranges": "38-38",
+      "winners_usernames": "brass-canyon",
+      "winners_tickets": "55",
+      "winners_ticket_ranges": "55-55",
       "total_tickets_rounds": "100",
-      "canonical_snapshot_sha256_rounds": "0aa72e324420b5b7674528e0c61abd1fc0b4132dcf47d8d26bf044b33888351f",
-      "canonical_snapshot_bytes_rounds": "1622",
-      "seeds_sha256": "c07be78bc4982189e5c6fd5ffdb1204012af828952485df6e7a8c6b008ff68a5"
+      "canonical_snapshot_sha256_rounds": "7d407a2e2ac897526d972856e1b2efa3318e86e8a4fe52eb3be4faf3e72abc0d",
+      "canonical_snapshot_bytes_rounds": "1522",
+      "seeds_sha256": "8a1cb18cc2e5304547c45703f4be764fe77db8e65010e21b56c74b8106655972"
     }
   },
   {
@@ -79,13 +79,13 @@
       "status": "ok",
       "participants_count": "100",
       "winners_count": "3",
-      "winners_usernames": "@carbon-echo|@carbon-canyon|@cinder-arc",
-      "winners_tickets": "90|85|90",
-      "winners_ticket_ranges": "90-90|85-85|90-90",
+      "winners_usernames": "binary-beacon|austere-beacon|brass-arc",
+      "winners_tickets": "44|34|50",
+      "winners_ticket_ranges": "44-44|34-34|50-50",
       "total_tickets_rounds": "100|99|98",
-      "canonical_snapshot_sha256_rounds": "0aa72e324420b5b7674528e0c61abd1fc0b4132dcf47d8d26bf044b33888351f|57c4e5fc1550c916e52d600c16b736459d6930a13182bb434c704170f7b7803b|682e67ab1edccb59311eddc937be4d4244995c140e6ae15c9b6a4e46e0e1a87e",
-      "canonical_snapshot_bytes_rounds": "1622|1607|1590",
-      "seeds_sha256": "672f59548cd61b97fec5fbfc4083b2849c945ca3375b035ac9d82ff1d66fa791|8d01aac083468aac976d917d7a76840adbce8b03c9e9e5dc524dee6689a10e8d|322fe6e58a287cccde1da921c577f00123b8684e4e96c002f2dd6b809c1303db"
+      "canonical_snapshot_sha256_rounds": "7d407a2e2ac897526d972856e1b2efa3318e86e8a4fe52eb3be4faf3e72abc0d|c68b583ab0cb536da411ebf901cd7e47cb202eb6f6987e24bfe4144a1790004f|7444c7169331668d136e217efefe3623d36a933f66586ba6353c882b5cfd5dd6",
+      "canonical_snapshot_bytes_rounds": "1522|1506|1489",
+      "seeds_sha256": "3899e115af6f863ffada03fcb8aba47ef852e91b1eeaab1593bd9b983d6f31a7|6b54a4318f0cc5926dcff7765413b19af72c8a080b165fb268f058fad8ee17e9|f6fff86f852b89ae6e8b308b6f63913a76ed48b1f03f0bfdcab143beeaec5fbb"
     }
   },
   {
@@ -104,8 +104,8 @@
       "participants_count": "100",
       "winners_count": "1",
       "total_tickets_rounds": "550",
-      "canonical_snapshot_sha256_rounds": "741ee72cdbf6516bc552135ad5b4bb4ae5240ef722240b8c78a289b91e8574dd",
-      "canonical_snapshot_bytes_rounds": "1632"
+      "canonical_snapshot_sha256_rounds": "e2aab16d8dc600a074fb28cd095bfb138cce0b80064300f7efb2be29092502a6",
+      "canonical_snapshot_bytes_rounds": "1532"
     }
   }
 ]
