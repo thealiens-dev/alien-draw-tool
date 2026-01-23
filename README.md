@@ -18,7 +18,13 @@ Given the same inputs, the output is always identical and can be independently r
 
 ## Algorithm
 
-### Single-winner example (winners_count = 1)
+### Single-winner case (N = 1)
+
+```
+This section explains the algorithm conceptually using round numbering starting from 1.
+In the actual CLI output, all list-based fields (e.g. *_rounds) are zero-indexed.
+This is a representation detail only – the algorithm itself operates in rounds 1..N.
+```
 
 ```text
 snapshot_1 = canonicalize(all participants)
@@ -28,7 +34,7 @@ ticket_1 = (int(seed_1, 16) % total_tickets_1) + 1     # total_tickets_rounds[1]
 winner_1 = the username whose ticket range contains ticket_1
 ```
 
-### General case (winners_count = N)
+### General case (N > 1)
 
 For round i = 1..N:
 
@@ -64,14 +70,13 @@ john,10
 bob,15
 charlie,13
 ```
+This snippet shows the format only. For canonical, reproducible demos, use the full fixtures in `tests/fixtures/`.
 
 - `ticket_count` must be an integer >= 1
 - input order does not matter – entries may be unsorted
 - `username` is treated as a generic identifier (trimmed only, case-sensitive)
 - duplicate usernames are not allowed (the tool will fail)
 - ticket ranges are derived deterministically from the canonical (sorted) snapshot
-
-Example files are provided as `participants-weighted.example.csv` and `participants-equal.example.txt`.
 
 ---
 
@@ -92,6 +97,7 @@ john
 bob
 charlie
 ```
+This example shows the minimal file format only. For real verification and reproducible proofs, always use the full canonical fixtures shipped with the repository (see `tests/fixtures/vector-equal.txt`).
 
 ### weighted
 
@@ -103,6 +109,7 @@ john,10
 bob,15
 charlie,13
 ```
+This example shows the format only. Canonical demo data is provided in `tests/fixtures/vector-weighted.csv`.
 
 Regardless of mode, the canonical snapshot is always built with the standard header and sorted.
 At least two unique usernames are required.
@@ -112,13 +119,13 @@ At least two unique usernames are required.
 ## Usage
 
 ```bash
-# Equal mode (one username per line)
-python3 draw.py --block-hash <BTC_BLOCK_HASH> --mode equal --winners 1 participants-equal.example.txt
+# Equal mode (one username per line, canonical demo using full fixture list)
+python3 draw.py --block-hash <BTC_BLOCK_HASH> --mode equal --winners 1 tests/fixtures/vector-equal.txt
 ```
 
 ```bash
-# Weighted mode (CSV with ticket_count)
-python3 draw.py --block-height <BLOCK_HEIGHT> --mode weighted --winners 1 participants-weighted.example.csv
+# Weighted mode (CSV with ticket_count, canonical demo using full fixture list)
+python3 draw.py --block-height <BLOCK_HEIGHT> --mode weighted --winners 1 tests/fixtures/vector-weighted.csv
 ```
 
 - Provide exactly one of `--block-hash` or `--block-height`.
@@ -140,7 +147,7 @@ Older proofs (<=1.1.3) used single-winner fields; current versions use only list
 
 ## Example (equal, primary)
 
-Example run using equal mode:
+Canonical demo using the shipped equal-mode fixture (100 participants).
 
 ```bash
 python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d --mode equal --winners 1 tests/fixtures/vector-equal.txt
@@ -159,23 +166,23 @@ block_hash=00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d
 participants_file=vector-equal.txt
 participants_count=100
 canonical_snapshot=username,ticket_count (normalized + sorted)
-participants_raw_file_bytes=1409
-participants_raw_file_sha256=4f21575ee279c0025d3e9112fbf0e334f4ced8d3ea8ec031c29cf2ff326f2343
+participants_raw_file_bytes=1309
+participants_raw_file_sha256=f9586b69592a447101d20b6fba39a0790b404af19c23a0ab6149084780120356
 winners_count=1
-winners_usernames=@carbon-echo
-winners_tickets=90
-winners_ticket_ranges=90-90
+winners_usernames=binary-beacon
+winners_tickets=44
+winners_ticket_ranges=44-44
 total_tickets_rounds=100
-canonical_snapshot_sha256_rounds=0aa72e324420b5b7674528e0c61abd1fc0b4132dcf47d8d26bf044b33888351f
-canonical_snapshot_bytes_rounds=1622
-seeds_sha256=672f59548cd61b97fec5fbfc4083b2849c945ca3375b035ac9d82ff1d66fa791
+canonical_snapshot_sha256_rounds=7d407a2e2ac897526d972856e1b2efa3318e86e8a4fe52eb3be4faf3e72abc0d
+canonical_snapshot_bytes_rounds=1522
+seeds_sha256=3899e115af6f863ffada03fcb8aba47ef852e91b1eeaab1593bd9b983d6f31a7
 ```
 
 ---
 
 ## Example (weighted, secondary)
 
-Example run using weighted mode:
+Canonical demo using the shipped weighted-mode fixture (100 participants).
 
 ```bash
 python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d --mode weighted --winners 1 tests/fixtures/vector-weighted.csv
@@ -194,16 +201,16 @@ block_hash=00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d
 participants_file=vector-weighted.csv
 participants_count=100
 canonical_snapshot=username,ticket_count (normalized + sorted)
-participants_raw_file_bytes=1632
-participants_raw_file_sha256=6459f3441742dddb0be650d1c13b6ef56e04a6c90f1712d62e649b2039d7a60b
+participants_raw_file_bytes=1532
+participants_raw_file_sha256=031fc431184e7bae0ead5220c1cd0ea3ae34c2be6e953ab74c6b74cf7612005c
 winners_count=1
-winners_usernames=@ancient-beacon
-winners_tickets=67
-winners_ticket_ranges=66-67
+winners_usernames=ancient-circuit
+winners_tickets=85
+winners_ticket_ranges=77-85
 total_tickets_rounds=550
-canonical_snapshot_sha256_rounds=741ee72cdbf6516bc552135ad5b4bb4ae5240ef722240b8c78a289b91e8574dd
-canonical_snapshot_bytes_rounds=1632
-seeds_sha256=d53a7c824741320cc0584a12d6ba97238f4286593bf75f0945e37fd2cacc5e28
+canonical_snapshot_sha256_rounds=e2aab16d8dc600a074fb28cd095bfb138cce0b80064300f7efb2be29092502a6
+canonical_snapshot_bytes_rounds=1532
+seeds_sha256=dffa7821ec8aefa63afc0ae1d28ab2c8d684a3f3e114bea10ee23006ff597b36
 ```
 
 ---
