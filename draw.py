@@ -10,7 +10,7 @@ import urllib.error
 import urllib.request
 from typing import Optional
 
-VERSION = "1.1.3"
+VERSION = "2.0.0"
 PROJECT = "The Aliens"
 
 
@@ -43,6 +43,39 @@ def _resolve_block_hash_from_height(height: int) -> tuple[Optional[str], Optiona
     return body, 200
 
 
+def build_ranges(participants_sorted: list[tuple[str, int]]) -> tuple[list[tuple[str, int, int]], int]:
+    rows_sorted: list[tuple[str, int, int]] = []
+    current = 1
+    for uname, tc in participants_sorted:
+        from_ticket = current
+        to_ticket = current + tc - 1
+        rows_sorted.append((uname, from_ticket, to_ticket))
+        current = to_ticket + 1
+    total_tickets = current - 1
+    return rows_sorted, total_tickets
+
+
+def build_canonical_csv_bytes(participants_sorted: list[tuple[str, int]]) -> bytes:
+    canonical_lines = ["username,ticket_count\n"]
+    for uname, tc in participants_sorted:
+        canonical_lines.append(f"{uname},{tc}\n")
+    return "".join(canonical_lines).encode("utf-8")
+
+
+def pick_winner(
+    seed_hex: str, rows_sorted: list[tuple[str, int, int]], total_tickets: int
+) -> tuple[str, int, str]:
+    winner_ticket = (int(seed_hex, 16) % total_tickets) + 1
+    winner_username = ""
+    winner_range = ""
+    for username, from_ticket, to_ticket in rows_sorted:
+        if from_ticket <= winner_ticket <= to_ticket:
+            winner_username = username
+            winner_range = f"{from_ticket}-{to_ticket}"
+            break
+    return winner_username, winner_ticket, winner_range
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="alien-draw-tool",
@@ -54,9 +87,14 @@ def main() -> int:
     block_group.add_argument("--block-height", type=int, help="Bitcoin block height (int)")
     parser.add_argument(
         "--mode",
-        choices=("uniform", "weighted"),
-        default="uniform",
-        help="Draw mode: uniform (default, 1 ticket each) or weighted (CSV with ticket_count).",
+        choices=("equal", "weighted"),
+        required=True,
+        help="Draw mode: equal (1 ticket each) or weighted (CSV with ticket_count).",
+    )
+    parser.add_argument(
+        "--winners",
+        type=int,
+        help="Number of winners. Must be >= 1 and <= participants_count - 1.",
     )
     args = parser.parse_args()
 
@@ -88,7 +126,7 @@ def main() -> int:
     if not os.path.isfile(csv_path):
         print(f"Error: missing {participants_filename} next to the tool: {csv_path}", file=sys.stderr)
         print(
-            "Tip: copy participants-weighted.example.csv or participants-uniform.example.txt next to the tool "
+            "Tip: copy participants-weighted.example.csv or participants-equal.example.txt next to the tool"
             "(or pass a filename as the participants argument).",
             file=sys.stderr,
         )
@@ -168,7 +206,11 @@ def main() -> int:
                         continue
                     first_line = False
                     if "," in username:
-                        print("Error: uniform mode expects one username per line (no commas).", file=sys.stderr)
+                        print(
+                            "Error: equal mode expects one username per line (no commas). "
+                            "This looks like a weighted CSV — did you mean to use --mode weighted?",
+                            file=sys.stderr,
+                        )
                         return 1
                     if username in totals:
                         print(f"Error: duplicate username not allowed: {username}.", file=sys.stderr)
@@ -191,30 +233,31 @@ def main() -> int:
             file=sys.stderr,
         )
         return 1
+    if args.winners is None:
+        print("Error: --winners is required.", file=sys.stderr)
+        return 1
+    if args.winners < 1:
+        print("Error: winners must be >= 1.", file=sys.stderr)
+        return 1
+    if args.winners > len(totals) - 1:
+        print("Error: winners must be <= participants_count - 1.", file=sys.stderr)
+        return 1
+
+    participants_count = len(totals)
 
     # Canonical ordering: lexicographic by username (case-sensitive).
     participants_sorted = sorted(totals.items(), key=lambda kv: kv[0])
 
     # Build canonical CSV bytes (used for snapshot hash) so ordering in the input file
     # does not change the result.
-    canonical_lines = ["username,ticket_count\n"]
-    for uname, tc in participants_sorted:
-        canonical_lines.append(f"{uname},{tc}\n")
-    canonical_csv_bytes = "".join(canonical_lines).encode("utf-8")
+    canonical_csv_bytes = build_canonical_csv_bytes(participants_sorted)
 
     # Canonical snapshot hash is computed from canonical bytes (trimmed + sorted).
     canonical_snapshot_sha256 = hashlib.sha256(canonical_csv_bytes).hexdigest()
 
     # Build deterministic ticket ranges from canonical ordering.
-    rows_sorted: list[tuple[str, int, int]] = []
-    current = 1
-    for uname, tc in participants_sorted:
-        from_ticket = current
-        to_ticket = current + tc - 1
-        rows_sorted.append((uname, from_ticket, to_ticket))
-        current = to_ticket + 1
-
-    total_tickets = current - 1
+    rows_sorted, total_tickets = build_ranges(participants_sorted)
+    total_tickets_full = total_tickets
 
     status = "final"
     reason = ""
@@ -238,22 +281,56 @@ def main() -> int:
         seed_input = (block_hash + canonical_snapshot_sha256).encode("utf-8")
         seed = hashlib.sha256(seed_input).hexdigest()
 
-        # Determine the winner ticket.
-        winner_ticket = (int(seed, 16) % total_tickets) + 1
+        winners_usernames: list[str] = []
+        winners_tickets: list[int] = []
+        winners_ranges: list[str] = []
+        seeds: list[str] = [seed]
+        total_tickets_rounds: list[int] = [total_tickets_full]
+        canonical_snapshot_sha256_rounds: list[str] = [canonical_snapshot_sha256]
+        canonical_snapshot_bytes_rounds: list[int] = [len(canonical_csv_bytes)]
 
-        # Find the winner range.
-        winner_username = ""
-        winner_range = ""
-        for username, from_ticket, to_ticket in rows_sorted:
-            if from_ticket <= winner_ticket <= to_ticket:
-                winner_username = username
-                winner_range = f"{from_ticket}-{to_ticket}"
-                break
+        remaining_participants = participants_sorted[:]
 
+        winner_username, winner_ticket, winner_range = pick_winner(seed, rows_sorted, total_tickets)
         if not winner_username:
             # This should not happen if CSV ranges are correct, but guard anyway.
             print("Error: winner ticket not found in any range (CSV ranges inconsistent).", file=sys.stderr)
             return 1
+        winners_usernames.append(winner_username)
+        winners_tickets.append(winner_ticket)
+        winners_ranges.append(winner_range)
+
+        remaining_participants = [
+            (uname, tc) for uname, tc in remaining_participants if uname != winner_username
+        ]
+
+        if args.winners > 1:
+            for i in range(2, args.winners + 1):
+                remaining_sorted = sorted(remaining_participants, key=lambda kv: kv[0])
+                rows_sorted, total_tickets = build_ranges(remaining_sorted)
+                total_tickets_rounds.append(total_tickets)
+                canonical_csv_bytes_round = build_canonical_csv_bytes(remaining_sorted)
+                canonical_snapshot_bytes_rounds.append(len(canonical_csv_bytes_round))
+                canonical_snapshot_sha256_round = hashlib.sha256(canonical_csv_bytes_round).hexdigest()
+                canonical_snapshot_sha256_rounds.append(canonical_snapshot_sha256_round)
+                seed_i_input = (block_hash + canonical_snapshot_sha256_round).encode("utf-8")
+                seed_i = hashlib.sha256(seed_i_input).hexdigest()
+                seeds.append(seed_i)
+                next_username, next_ticket, next_range = pick_winner(
+                    seed_i, rows_sorted, total_tickets
+                )
+                if not next_username:
+                    print(
+                        "Error: winner ticket not found in any range (CSV ranges inconsistent).",
+                        file=sys.stderr,
+                    )
+                    return 1
+                winners_usernames.append(next_username)
+                winners_tickets.append(next_ticket)
+                winners_ranges.append(next_range)
+                remaining_participants = [
+                    (uname, tc) for uname, tc in remaining_participants if uname != next_username
+                ]
 
     # Print stable, machine-parseable outputs (key=value).
     _out("project", PROJECT)
@@ -271,24 +348,30 @@ def main() -> int:
     else:
         _out("block_hash", block_hash)
     _out("participants_file", os.path.basename(csv_path))
+    _out("participants_count", str(participants_count))
     _out("canonical_snapshot", "username,ticket_count (normalized + sorted)")
 
     # Raw input file (auditing only - can differ by ordering/formatting)
     _out("participants_raw_file_bytes", str(len(csv_bytes)))
     _out("participants_raw_file_sha256", participants_file_hash)
 
-    # Canonical snapshot (used for selection)
-    _out("canonical_snapshot_bytes", str(len(canonical_csv_bytes)))
-    _out("canonical_snapshot_sha256", canonical_snapshot_sha256)
-
-    _out("total_tickets", str(total_tickets))
     if status == "final":
-        _out("seed_sha256", seed)
-        _out("winner_ticket", str(winner_ticket))
-        _out("winner_username", winner_username)
-        _out("winner_ticket_range", winner_range)
+        _out("winners_count", str(args.winners))
+        _out("winners_usernames", "|".join(winners_usernames))
+        _out("winners_tickets", "|".join(str(t) for t in winners_tickets))
+        _out("winners_ticket_ranges", "|".join(winners_ranges))
+        _out("total_tickets_rounds", "|".join(str(t) for t in total_tickets_rounds))
+        _out("canonical_snapshot_sha256_rounds", "|".join(canonical_snapshot_sha256_rounds))
+        _out("canonical_snapshot_bytes_rounds", "|".join(str(n) for n in canonical_snapshot_bytes_rounds))
+        _out("seeds_sha256", "|".join(seeds))
         return 0
-    return 2
+    else:
+        # pending - preview for round 1 only (no seeds, no winners)
+        _out("winners_count", str(args.winners))
+        _out("total_tickets_rounds", str(total_tickets_full))
+        _out("canonical_snapshot_sha256_rounds", canonical_snapshot_sha256)
+        _out("canonical_snapshot_bytes_rounds", str(len(canonical_csv_bytes)))
+        return 2
 
 
 if __name__ == "__main__":

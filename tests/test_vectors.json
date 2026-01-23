@@ -1,19 +1,24 @@
 [
   {
-    "name": "uniform_block_hash",
+    "name": "equal_block_hash",
     "input": {
-      "mode": "uniform",
+      "mode": "equal",
       "block_source": "hash",
       "block_hash": "00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d",
-      "participants_file": "tests/fixtures/vector-uniform.txt"
+      "participants_file": "tests/fixtures/vector-equal.txt",
+      "winners": 1
     },
     "expected": {
       "status": "ok",
-      "canonical_snapshot_sha256": "0aa72e324420b5b7674528e0c61abd1fc0b4132dcf47d8d26bf044b33888351f",
-      "seed_sha256": "672f59548cd61b97fec5fbfc4083b2849c945ca3375b035ac9d82ff1d66fa791",
-      "total_tickets": "100",
-      "winner_ticket": "90",
-      "winner_username": "@carbon-echo"
+      "participants_count": "100",
+      "winners_count": "1",
+      "winners_usernames": "@carbon-echo",
+      "winners_tickets": "90",
+      "winners_ticket_ranges": "90-90",
+      "total_tickets_rounds": "100",
+      "canonical_snapshot_sha256_rounds": "0aa72e324420b5b7674528e0c61abd1fc0b4132dcf47d8d26bf044b33888351f",
+      "canonical_snapshot_bytes_rounds": "1622",
+      "seeds_sha256": "672f59548cd61b97fec5fbfc4083b2849c945ca3375b035ac9d82ff1d66fa791"
     }
   },
   {
@@ -22,33 +27,65 @@
       "mode": "weighted",
       "block_source": "hash",
       "block_hash": "00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d",
-      "participants_file": "tests/fixtures/vector-weighted.csv"
+      "participants_file": "tests/fixtures/vector-weighted.csv",
+      "winners": 1
     },
     "expected": {
       "status": "ok",
-      "canonical_snapshot_sha256": "741ee72cdbf6516bc552135ad5b4bb4ae5240ef722240b8c78a289b91e8574dd",
-      "seed_sha256": "d53a7c824741320cc0584a12d6ba97238f4286593bf75f0945e37fd2cacc5e28",
-      "total_tickets": "550",
-      "winner_ticket": "67",
-      "winner_username": "@ancient-beacon"
+      "participants_count": "100",
+      "winners_count": "1",
+      "winners_usernames": "@ancient-beacon",
+      "winners_tickets": "67",
+      "winners_ticket_ranges": "66-67",
+      "total_tickets_rounds": "550",
+      "canonical_snapshot_sha256_rounds": "741ee72cdbf6516bc552135ad5b4bb4ae5240ef722240b8c78a289b91e8574dd",
+      "canonical_snapshot_bytes_rounds": "1632",
+      "seeds_sha256": "d53a7c824741320cc0584a12d6ba97238f4286593bf75f0945e37fd2cacc5e28"
     }
   },
   {
-    "name": "uniform_block_height_resolved",
+    "name": "equal_block_height_resolved",
     "input": {
-      "mode": "uniform",
+      "mode": "equal",
       "block_source": "height",
       "block_height": 800000,
       "block_hash": "00000000000000000002a7c4c1e48d76c5a37902165a270156b7a8d72728a054",
-      "participants_file": "tests/fixtures/vector-uniform.txt"
+      "participants_file": "tests/fixtures/vector-equal.txt",
+      "winners": 1
     },
     "expected": {
       "status": "ok",
-      "canonical_snapshot_sha256": "0aa72e324420b5b7674528e0c61abd1fc0b4132dcf47d8d26bf044b33888351f",
-      "seed_sha256": "c07be78bc4982189e5c6fd5ffdb1204012af828952485df6e7a8c6b008ff68a5",
-      "total_tickets": "100",
-      "winner_ticket": "38",
-      "winner_username": "@austere-cradle"
+      "participants_count": "100",
+      "winners_count": "1",
+      "winners_usernames": "@austere-cradle",
+      "winners_tickets": "38",
+      "winners_ticket_ranges": "38-38",
+      "total_tickets_rounds": "100",
+      "canonical_snapshot_sha256_rounds": "0aa72e324420b5b7674528e0c61abd1fc0b4132dcf47d8d26bf044b33888351f",
+      "canonical_snapshot_bytes_rounds": "1622",
+      "seeds_sha256": "c07be78bc4982189e5c6fd5ffdb1204012af828952485df6e7a8c6b008ff68a5"
+    }
+  },
+  {
+    "name": "equal_multi_winner",
+    "input": {
+      "mode": "equal",
+      "block_source": "hash",
+      "block_hash": "00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d",
+      "participants_file": "tests/fixtures/vector-equal.txt",
+      "winners": 3
+    },
+    "expected": {
+      "status": "ok",
+      "participants_count": "100",
+      "winners_count": "3",
+      "winners_usernames": "@carbon-echo|@carbon-canyon|@cinder-arc",
+      "winners_tickets": "90|85|90",
+      "winners_ticket_ranges": "90-90|85-85|90-90",
+      "total_tickets_rounds": "100|99|98",
+      "canonical_snapshot_sha256_rounds": "0aa72e324420b5b7674528e0c61abd1fc0b4132dcf47d8d26bf044b33888351f|57c4e5fc1550c916e52d600c16b736459d6930a13182bb434c704170f7b7803b|682e67ab1edccb59311eddc937be4d4244995c140e6ae15c9b6a4e46e0e1a87e",
+      "canonical_snapshot_bytes_rounds": "1622|1607|1590",
+      "seeds_sha256": "672f59548cd61b97fec5fbfc4083b2849c945ca3375b035ac9d82ff1d66fa791|8d01aac083468aac976d917d7a76840adbce8b03c9e9e5dc524dee6689a10e8d|322fe6e58a287cccde1da921c577f00123b8684e4e96c002f2dd6b809c1303db"
     }
   },
   {
@@ -57,14 +94,18 @@
       "mode": "weighted",
       "block_source": "height",
       "block_height": 99999999,
-      "participants_file": "tests/fixtures/vector-weighted.csv"
+      "participants_file": "tests/fixtures/vector-weighted.csv",
+      "winners": 1
     },
     "expected": {
       "status": "pending",
-      "reason": "block_not_found_yet",
       "block_hash": "",
-      "canonical_snapshot_sha256": "741ee72cdbf6516bc552135ad5b4bb4ae5240ef722240b8c78a289b91e8574dd",
-      "total_tickets": "550"
+      "reason": "block_not_found_yet",
+      "participants_count": "100",
+      "winners_count": "1",
+      "total_tickets_rounds": "550",
+      "canonical_snapshot_sha256_rounds": "741ee72cdbf6516bc552135ad5b4bb4ae5240ef722240b8c78a289b91e8574dd",
+      "canonical_snapshot_bytes_rounds": "1632"
     }
   }
 ]

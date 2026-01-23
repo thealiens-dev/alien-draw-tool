@@ -34,6 +34,10 @@ def run_vector(vector: dict) -> list[str]:
 
     cmd += [input_data["participants_file"], "--mode", input_data["mode"]]
 
+    # --winners is required in 2.0.0
+    winners = input_data.get("winners", 1)
+    cmd += ["--winners", str(winners)]
+
     result = subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True)
     output = parse_output(result.stdout)
 
@@ -72,17 +76,36 @@ def run_vector(vector: dict) -> list[str]:
         if key in ("status", "reason"):
             continue
         if output.get(key) != value:
-            errors.append(f"{name}: {key} mismatch")
+            errors.append(f"{name}: {key} mismatch (expected={value}, got={output.get(key)})")
 
     if expected_status == "pending":
         if output.get("reason") != expected.get("reason"):
             errors.append(f"{name}: reason mismatch")
-        if "seed_sha256" in output or "winner_ticket" in output:
-            errors.append(f"{name}: pending output must not include seed/winner fields")
-    else:
-        for key in ("seed_sha256", "winner_ticket", "winner_username"):
+        # For pending, verify round 1 preview fields exist
+        pending_required = [
+            "winners_count",
+            "total_tickets_rounds",
+            "canonical_snapshot_sha256_rounds",
+            "canonical_snapshot_bytes_rounds",
+        ]
+        for key in pending_required:
             if key not in output:
-                errors.append(f"{name}: missing {key}")
+                errors.append(f"{name}: missing pending preview field {key}")
+    else:
+        # For status=ok, verify required 2.0.0 list-based fields exist
+        required_fields = [
+            "winners_count",
+            "winners_usernames",
+            "winners_tickets",
+            "winners_ticket_ranges",
+            "total_tickets_rounds",
+            "canonical_snapshot_sha256_rounds",
+            "canonical_snapshot_bytes_rounds",
+            "seeds_sha256",
+        ]
+        for key in required_fields:
+            if key not in output:
+                errors.append(f"{name}: missing required field {key}")
 
     if errors and result.stderr.strip():
         errors.append(f"{name}: stderr: {result.stderr.strip()}")

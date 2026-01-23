@@ -5,6 +5,32 @@
 - Any change to output/proof, CLI flags, default modes, input parsing, or README examples must be recorded here.
 - Purely internal changes can be omitted unless they affect proof/format.
 
+## [2.0.0] - 2026-01-23
+
+### Breaking
+
+- Proof format is now list-based only (pipe-delimited), even for --winners 1.
+- Removed single-winner fields: seed_sha256, winner_ticket, winner_username, winner_ticket_range.
+- Removed global canonical_snapshot_bytes and canonical_snapshot_sha256 fields (to avoid duplicating per-round proof fields; canonical snapshot proof is now only emitted via the *_rounds outputs).
+- Renamed mode "uniform" to "equal" (terminology change only; algorithm and behavior unchanged).
+- `--mode` is now required (must be explicitly set to `equal` or `weighted`).
+
+### Added
+
+- Added new --winners flag and made it required (must be provided explicitly).
+- winners_* list outputs (pipe-delimited): winners_count, winners_usernames, winners_tickets, winners_ticket_ranges.
+- total_tickets_rounds (pipe-delimited) to document per-round ticket pools.
+- canonical_snapshot_sha256_rounds (pipe-delimited) to document per-round canonical hashes.
+- canonical_snapshot_bytes_rounds (pipe-delimited) to document per-round canonical byte sizes.
+- seeds_sha256 (pipe-delimited) to document per-round seeds.
+- tests/regenerate_vectors.py helper to regenerate test vectors from current output.
+- `participants_count` field documenting the number of unique participants after normalization and validation.
+
+### Notes
+
+- Multi-winner seeding is per-round: SHA256(block_hash + canonical_snapshot_sha256_round_i).
+- Pending (`status=pending`) output includes round-1 preview fields (including `participants_count`) but does not include seeds or winner lists.
+
 ## [1.1.3] - 2026-01-18
 
 ### Fixed
