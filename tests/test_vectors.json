@@ -2,7 +2,7 @@
   {
     "name": "equal_block_hash",
     "input": {
-      "mode": "equal",
+      "ticket_distribution": "equal",
       "block_source": "hash",
       "block_hash": "00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d",
       "participants_file": "tests/fixtures/vector-equal.txt",
@@ -24,7 +24,7 @@
   {
     "name": "weighted_block_hash",
     "input": {
-      "mode": "weighted",
+      "ticket_distribution": "weighted",
       "block_source": "hash",
       "block_hash": "00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d",
       "participants_file": "tests/fixtures/vector-weighted.csv",
@@ -46,7 +46,7 @@
   {
     "name": "equal_block_height_resolved",
     "input": {
-      "mode": "equal",
+      "ticket_distribution": "equal",
       "block_source": "height",
       "block_height": 800000,
       "block_hash": "00000000000000000002a7c4c1e48d76c5a37902165a270156b7a8d72728a054",
@@ -69,7 +69,7 @@
   {
     "name": "equal_multi_winner",
     "input": {
-      "mode": "equal",
+      "ticket_distribution": "equal",
       "block_source": "hash",
       "block_hash": "00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d",
       "participants_file": "tests/fixtures/vector-equal.txt",
@@ -91,7 +91,7 @@
   {
     "name": "block_height_pending",
     "input": {
-      "mode": "weighted",
+      "ticket_distribution": "weighted",
       "block_source": "height",
       "block_height": 99999999,
       "participants_file": "tests/fixtures/vector-weighted.csv",

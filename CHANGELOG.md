@@ -5,6 +5,13 @@
 - Any change to output/proof, CLI flags, default modes, input parsing, or README examples must be recorded here.
 - Purely internal changes can be omitted unless they affect proof/format.
 
+## [2.0.1] - 2026-02-20
+
+### Changed
+
+- Renamed "Draw mode" to "Ticket Distribution" in CLI (equal/weighted unchanged).
+- `--winners` is now enforced as a required `argparse` flag, so CLI help shows it as required.
+
 ## [2.0.0] - 2026-01-23
 
 ### Breaking

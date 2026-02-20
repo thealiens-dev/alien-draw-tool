@@ -60,7 +60,11 @@ def regenerate_vector(vector: dict) -> dict:
         print(f"WARNING: {name}: unknown block_source {block_source}", file=sys.stderr)
         return vector
 
-    cmd += [input_data["participants_file"], "--mode", input_data["mode"]]
+    cmd += [
+        input_data["participants_file"],
+        "--ticket-distribution",
+        input_data["ticket_distribution"],
+    ]
 
     # --winners is required in 2.0.0
     winners = input_data.get("winners", 1)

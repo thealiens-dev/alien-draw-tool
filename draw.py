@@ -10,7 +10,7 @@ import urllib.error
 import urllib.request
 from typing import Optional
 
-VERSION = "2.0.0"
+VERSION = "2.0.1"
 PROJECT = "The Aliens"
 
 
@@ -86,14 +86,16 @@ def main() -> int:
     block_group.add_argument("--block-hash", help="64-hex Bitcoin block hash")
     block_group.add_argument("--block-height", type=int, help="Bitcoin block height (int)")
     parser.add_argument(
-        "--mode",
+        "--ticket-distribution",
+        metavar="<equal|weighted>",
         choices=("equal", "weighted"),
         required=True,
-        help="Draw mode: equal (1 ticket each) or weighted (CSV with ticket_count).",
+        help="Defines how raffle tickets are distributed among participants.",
     )
     parser.add_argument(
         "--winners",
         type=int,
+        required=True,
         help="Number of winners. Must be >= 1 and <= participants_count - 1.",
     )
     args = parser.parse_args()
@@ -155,7 +157,7 @@ def main() -> int:
     totals: dict[str, int] = {}
     try:
         with open(csv_path, "r", newline="", encoding="utf-8-sig") as f:
-            if args.mode == "weighted":
+            if args.ticket_distribution == "weighted":
                 reader = csv.DictReader(f)
 
                 required = {"username", "ticket_count"}
@@ -207,8 +209,8 @@ def main() -> int:
                     first_line = False
                     if "," in username:
                         print(
-                            "Error: equal mode expects one username per line (no commas). "
-                            "This looks like a weighted CSV — did you mean to use --mode weighted?",
+                            "Error: ticket distribution 'equal' expects one username per line (no commas). "
+                            "This looks like a weighted CSV — did you mean to use --ticket-distribution weighted?",
                             file=sys.stderr,
                         )
                         return 1
@@ -232,9 +234,6 @@ def main() -> int:
             f"Error: participants file must include at least two usernames: {os.path.basename(csv_path)}",
             file=sys.stderr,
         )
-        return 1
-    if args.winners is None:
-        print("Error: --winners is required.", file=sys.stderr)
         return 1
     if args.winners < 1:
         print("Error: winners must be >= 1.", file=sys.stderr)
@@ -341,7 +340,7 @@ def main() -> int:
     if block_source == "height":
         _out("block_height", str(block_height))
         _out("block_height_provider", "mempool.space")
-    _out("mode", args.mode)
+    _out("ticketDistribution", args.ticket_distribution)
     if status == "pending":
         _out("reason", reason)
         _out("block_hash", "")

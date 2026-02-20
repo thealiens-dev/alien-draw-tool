@@ -49,8 +49,8 @@ ticket_i = (int(seed_i, 16) % total_tickets_i) + 1     # total_tickets_rounds[i]
 winner_i = the username whose ticket range contains ticket_i
 ```
 
-In equal mode, each participant has ticket_count=1.
-In weighted mode, ticket_count comes from the CSV input.
+In ticket distribution `equal`, each participant has ticket_count=1.
+In ticket distribution `weighted`, ticket_count comes from the CSV input.
 
 The canonical snapshot is built from trimmed `username,ticket_count` rows (whitespace trimmed only, case-sensitive) sorted lexicographically by `username` (standard string order - effectively alphabetical for typical identifiers).
 Sorting happens *before* hashing, which means the input file may be in any order without affecting the result.
@@ -61,8 +61,8 @@ The canonical snapshot always includes the header row `username,ticket_count`; i
 
 ## Input format
 
-This section describes the weighted mode input format (CSV with `ticket_count`).
-In equal mode, all participants implicitly receive exactly one ticket.
+This section describes the input format for ticket distribution `weighted` (CSV with `ticket_count`).
+In ticket distribution `equal`, all participants implicitly receive exactly one ticket.
 
 ```csv
 username,ticket_count
@@ -80,9 +80,10 @@ This snippet shows the format only. For canonical, reproducible demos, use the f
 
 ---
 
-## Modes
+## Ticket Distribution
 
-Two modes are available: **equal** and **weighted**. The `--mode` flag is required.
+Two ticket distribution options are available: **equal** and **weighted**.
+The `--ticket-distribution` flag is required.
 
 - **equal**: each participant has exactly the same weight (1 ticket each)
 - **weighted**: participant weights come from `ticket_count` column in CSV
@@ -101,7 +102,7 @@ This example shows the minimal file format only. For real verification and repro
 
 ### weighted
 
-Requires `--mode weighted` and a CSV file with the `username,ticket_count` header.
+Requires `--ticket-distribution weighted` and a CSV file with the `username,ticket_count` header.
 
 ```csv
 username,ticket_count
@@ -119,28 +120,28 @@ At least two unique usernames are required.
 ## Usage
 
 ```bash
-# Equal mode (one username per line, canonical demo using full fixture list)
-python3 draw.py --block-hash <BTC_BLOCK_HASH> --mode equal --winners 1 tests/fixtures/vector-equal.txt
+# ticket distribution `equal` (one username per line, canonical demo using full fixture list)
+python3 draw.py --block-hash <BTC_BLOCK_HASH> --ticket-distribution equal --winners 1 tests/fixtures/vector-equal.txt
 ```
 
 ```bash
-# Weighted mode (CSV with ticket_count, canonical demo using full fixture list)
-python3 draw.py --block-height <BLOCK_HEIGHT> --mode weighted --winners 1 tests/fixtures/vector-weighted.csv
+# ticket distribution `weighted` (CSV with ticket_count, canonical demo using full fixture list)
+python3 draw.py --block-height <BLOCK_HEIGHT> --ticket-distribution weighted --winners 1 tests/fixtures/vector-weighted.csv
 ```
 
 - Provide exactly one of `--block-hash` or `--block-height`.
-- `--mode` is required: use `equal` for one username per line, or `weighted` for CSV with `ticket_count`.
+- `--ticket-distribution` is required: use `equal` for one username per line, or `weighted` for CSV with `ticket_count`.
 - When using `--block-height`, the tool resolves the canonical block hash via mempool.space and prints it in the proof.
 - Future block height returns `status=pending` with exit code 2. `status=final` uses exit code 0; hard errors use exit code 1.
 - If the participants file argument is omitted, the tool defaults to `participants.csv` next to the script.
-- `--winners N` is required (introduced in 2.0.0; must be >= 1 and <= participants_count - 1).
+- `--winners N` is required and enforced by `argparse` (must be >= 1 and <= participants_count - 1).
 - Output fields are always list-based (pipe-delimited), even when `--winners 1`.
 - `participants_count` is the number of unique usernames after normalization (trim only, case-sensitive) and duplicate checks; it is used to validate `--winners <= participants_count - 1`.
 
 ## Multiple winners
 
 For winners > 1, each round recomputes the canonical snapshot from the remaining participants; seed for each round is SHA256(block_hash + canonical_snapshot_sha256_round_i).
-Mode is preserved across rounds: equal mode keeps 1 ticket per participant, weighted mode uses ticket_count when rebuilding ranges.
+Ticket distribution is preserved across rounds: equal keeps 1 ticket per participant, weighted uses ticket_count when rebuilding ranges.
 Older proofs (<=1.1.3) used single-winner fields; current versions use only list-based fields.
 
 ---
@@ -150,7 +151,7 @@ Older proofs (<=1.1.3) used single-winner fields; current versions use only list
 Canonical demo using the shipped equal-mode fixture (100 participants).
 
 ```bash
-python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d --mode equal --winners 1 tests/fixtures/vector-equal.txt
+python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d --ticket-distribution equal --winners 1 tests/fixtures/vector-equal.txt
 ```
 
 Example output:
@@ -158,10 +159,10 @@ Example output:
 ```text
 project=The Aliens
 tool=alien-draw-tool
-version=2.0.0
+version=2.0.1
 status=final
 block_source=hash
-mode=equal
+ticketDistribution=equal
 block_hash=00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d
 participants_file=vector-equal.txt
 participants_count=100
@@ -185,7 +186,7 @@ seeds_sha256=3899e115af6f863ffada03fcb8aba47ef852e91b1eeaab1593bd9b983d6f31a7
 Canonical demo using the shipped weighted-mode fixture (100 participants).
 
 ```bash
-python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d --mode weighted --winners 1 tests/fixtures/vector-weighted.csv
+python3 draw.py --block-hash 00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d --ticket-distribution weighted --winners 1 tests/fixtures/vector-weighted.csv
 ```
 
 Example output:
@@ -193,10 +194,10 @@ Example output:
 ```text
 project=The Aliens
 tool=alien-draw-tool
-version=2.0.0
+version=2.0.1
 status=final
 block_source=hash
-mode=weighted
+ticketDistribution=weighted
 block_hash=00000000000000000000a2fe23965ff0ca8a8178e8912840c0652201e9d6bb0d
 participants_file=vector-weighted.csv
 participants_count=100

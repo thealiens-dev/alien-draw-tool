@@ -32,7 +32,11 @@ def run_vector(vector: dict) -> list[str]:
     else:
         return [f"{name}: unknown block_source {block_source}"]
 
-    cmd += [input_data["participants_file"], "--mode", input_data["mode"]]
+    cmd += [
+        input_data["participants_file"],
+        "--ticket-distribution",
+        input_data["ticket_distribution"],
+    ]
 
     # --winners is required in 2.0.0
     winners = input_data.get("winners", 1)
@@ -59,8 +63,8 @@ def run_vector(vector: dict) -> list[str]:
     if output.get("block_source") != block_source:
         errors.append(f"{name}: block_source mismatch")
 
-    if output.get("mode") != input_data["mode"]:
-        errors.append(f"{name}: mode mismatch")
+    if output.get("ticketDistribution") != input_data["ticket_distribution"]:
+        errors.append(f"{name}: ticketDistribution mismatch")
 
     if block_source == "height":
         if output.get("block_height") != str(input_data["block_height"]):
