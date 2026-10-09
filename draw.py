@@ -1,17 +1,58 @@
 #!/usr/bin/env python3
 import argparse
-import csv
 import hashlib
 import http.client
 import os
+import re
 import socket
 import sys
 import urllib.error
 import urllib.request
 from typing import Optional
 
-VERSION = "2.0.1"
+VERSION = "2.0.2"
 PROJECT = "The Aliens"
+JS_WHITESPACE = "\u0009\u000a\u000b\u000c\u000d\u0020\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff"
+
+
+def trim_username(value: str) -> str:
+    return value.strip(JS_WHITESPACE)
+
+
+def canonical_username_key(value: str) -> bytes:
+    """Match the web protocol's case-sensitive UTF-16 code-unit ordering."""
+    return value.encode("utf-16-be")
+
+
+def parse_participants(text: str, distribution: str) -> dict[str, int]:
+    totals: dict[str, int] = {}
+    first_line = True
+    header = "username" if distribution == "equal" else "username,ticket_count"
+    for line in text.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+        if not trim_username(line):
+            continue
+        if first_line and trim_username(line) == header:
+            first_line = False
+            continue
+        first_line = False
+        if distribution == "weighted":
+            parts = line.split(",")
+            if len(parts) != 2:
+                raise ValueError("Weighted input expects username,ticket_count rows.")
+            username, raw_count = map(trim_username, parts)
+            if not re.fullmatch(r"\+?[0-9]+", raw_count):
+                raise ValueError("ticket_count must be a decimal integer.")
+            ticket_count = int(raw_count)
+            if ticket_count < 1 or ticket_count > 9007199254740991:
+                raise ValueError("ticket_count must be a safe integer >= 1.")
+        else:
+            username, ticket_count = trim_username(line), 1
+        if not username or any(character in username for character in "|,\r\n"):
+            raise ValueError("username cannot be empty or contain pipes, commas or line breaks.")
+        if username in totals:
+            raise ValueError(f"duplicate username not allowed: {username}.")
+        totals[username] = ticket_count
+    return totals
 
 
 def _out(key: str, value: str) -> None:
@@ -151,79 +192,18 @@ def main() -> int:
     # - duplicate usernames are not allowed (tool fails)
     # - canonical ordering is username ascending (case-sensitive)
 
-    # Read and parse input as text.
-    # Use utf-8-sig to tolerate UTF-8 BOM (common when CSVs come from Excel).
-    # Initialize totals before try block
-    totals: dict[str, int] = {}
+    # Decode the same bytes that were hashed, then apply the web input contract.
     try:
-        with open(csv_path, "r", newline="", encoding="utf-8-sig") as f:
-            if args.ticket_distribution == "weighted":
-                reader = csv.DictReader(f)
-
-                required = {"username", "ticket_count"}
-                if reader.fieldnames is None or not required.issubset(set(reader.fieldnames)):
-                    print(
-                        "Error: CSV must have headers: username,ticket_count",
-                        file=sys.stderr,
-                    )
-                    return 1
-
-                # Aggregate ticket counts per normalized username.
-                for row in reader:
-                    raw_username = (row.get("username") or "").strip()
-                    if not raw_username:
-                        print("Error: username cannot be empty.", file=sys.stderr)
-                        return 1
-
-                    # Normalize: trim whitespace only (case-sensitive username preserved).
-                    username = raw_username.strip()
-
-                    raw_tc = (row.get("ticket_count") or "").strip()
-                    if not raw_tc:
-                        print(f"Error: ticket_count is empty for {username}.", file=sys.stderr)
-                        return 1
-                    try:
-                        ticket_count = int(raw_tc)
-                    except (ValueError, TypeError):
-                        print(f"Error: ticket_count must be an integer for {username}.", file=sys.stderr)
-                        return 1
-
-                    if ticket_count < 1:
-                        print(f"Error: ticket_count must be >= 1 for {username}.", file=sys.stderr)
-                        return 1
-
-                    if username in totals:
-                        print(f"Error: duplicate username not allowed: {username}.", file=sys.stderr)
-                        return 1
-
-                    totals[username] = ticket_count
-            else:
-                first_line = True
-                for line in f:
-                    username = line.strip()
-                    if not username:
-                        continue
-                    if first_line and username == "username":
-                        first_line = False
-                        continue
-                    first_line = False
-                    if "," in username:
-                        print(
-                            "Error: ticket distribution 'equal' expects one username per line (no commas). "
-                            "This looks like a weighted CSV — did you mean to use --ticket-distribution weighted?",
-                            file=sys.stderr,
-                        )
-                        return 1
-                    if username in totals:
-                        print(f"Error: duplicate username not allowed: {username}.", file=sys.stderr)
-                        return 1
-                    totals[username] = 1
+        totals = parse_participants(csv_bytes.decode("utf-8-sig"), args.ticket_distribution)
     except UnicodeDecodeError:
         print(
             f"Error: cannot read participants file as UTF-8: {os.path.basename(csv_path)} "
             "(try saving it as UTF-8 or UTF-8 with BOM).",
             file=sys.stderr,
         )
+        return 1
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         return 1
 
     if not totals:
@@ -245,7 +225,7 @@ def main() -> int:
     participants_count = len(totals)
 
     # Canonical ordering: lexicographic by username (case-sensitive).
-    participants_sorted = sorted(totals.items(), key=lambda kv: kv[0])
+    participants_sorted = sorted(totals.items(), key=lambda kv: canonical_username_key(kv[0]))
 
     # Build canonical CSV bytes (used for snapshot hash) so ordering in the input file
     # does not change the result.
@@ -305,7 +285,7 @@ def main() -> int:
 
         if args.winners > 1:
             for i in range(2, args.winners + 1):
-                remaining_sorted = sorted(remaining_participants, key=lambda kv: kv[0])
+                remaining_sorted = sorted(remaining_participants, key=lambda kv: canonical_username_key(kv[0]))
                 rows_sorted, total_tickets = build_ranges(remaining_sorted)
                 total_tickets_rounds.append(total_tickets)
                 canonical_csv_bytes_round = build_canonical_csv_bytes(remaining_sorted)

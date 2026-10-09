@@ -5,6 +5,25 @@
 - Any change to output/proof, CLI flags, default modes, input parsing, or README examples must be recorded here.
 - Purely internal changes can be omitted unless they affect proof/format.
 
+## [2.0.2] - 2026-10-09
+
+### Fixed
+
+- Match the web's UTF-16 code-unit ordering for Unicode usernames, preserving existing ASCII vectors.
+- Match ECMAScript trimming, optional first-row headers and plain comma-separated weighted input parsing.
+- Reject output delimiters, non-decimal counts and unsafe integer counts in the shared input format.
+- Hash and parse the same input bytes rather than reopening the input file.
+
+### Added
+
+- `tests/test_vectors.py --offline` runs only hash-based vectors without provider access.
+- Offline contract tests cover ordering, trimming, header placement and invalid input.
+
+### Compatibility
+
+- Historical CLI proofs must be verified using their recorded CLI version. This release does not rewrite results.
+- Weighted rows do not interpret CSV quoting; the first `username,ticket_count` header is optional.
+
 ## [2.0.1] - 2026-02-20
 
 ### Changed

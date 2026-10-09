@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import argparse
 import subprocess
 import sys
 from pathlib import Path
@@ -118,11 +119,16 @@ def run_vector(vector: dict) -> list[str]:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--offline", action="store_true", help="Run only block-hash vectors; never contact a provider.")
+    args = parser.parse_args()
     with VECTORS_PATH.open("r", encoding="utf-8") as f:
         vectors = json.load(f)
 
     all_errors: list[str] = []
     for vector in vectors:
+        if args.offline and vector["input"]["block_source"] != "hash":
+            continue
         all_errors.extend(run_vector(vector))
 
     if all_errors:
@@ -130,7 +136,7 @@ def main() -> int:
             print(err)
         return 1
 
-    print("All test vectors passed.")
+    print("All offline test vectors passed." if args.offline else "All test vectors passed.")
     return 0
 
 

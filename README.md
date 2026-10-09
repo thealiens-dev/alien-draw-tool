@@ -52,7 +52,7 @@ winner_i = the username whose ticket range contains ticket_i
 In ticket distribution `equal`, each participant has ticket_count=1.
 In ticket distribution `weighted`, ticket_count comes from the CSV input.
 
-The canonical snapshot is built from trimmed `username,ticket_count` rows (whitespace trimmed only, case-sensitive) sorted lexicographically by `username` (standard string order - effectively alphabetical for typical identifiers).
+The canonical snapshot is built from trimmed `username,ticket_count` rows (ECMAScript whitespace trimmed only, case-sensitive) sorted by UTF-16 code units, matching the web's JavaScript string ordering. No Unicode normalization is applied. Version 2.0.2 fixes Unicode parity; existing ASCII vectors are unchanged. Use the recorded CLI version when verifying an older CLI proof.
 Sorting happens *before* hashing, which means the input file may be in any order without affecting the result.
 
 The canonical snapshot always includes the header row `username,ticket_count`; implementations that accept header-less input must prepend this header before canonicalization to remain compatible.
@@ -72,10 +72,11 @@ charlie,13
 ```
 This snippet shows the format only. For canonical, reproducible demos, use the full fixtures in `tests/fixtures/`.
 
-- `ticket_count` must be an integer >= 1
+- `ticket_count` must be an ASCII decimal safe integer >= 1 (an optional leading `+` is accepted)
 - input order does not matter – entries may be unsorted
 - `username` is treated as a generic identifier (trimmed only, case-sensitive)
 - duplicate usernames are not allowed (the tool will fail)
+- usernames cannot contain pipes, commas or line breaks; weighted rows do not interpret CSV quoting
 - ticket ranges are derived deterministically from the canonical (sorted) snapshot
 
 ---
@@ -102,7 +103,7 @@ This example shows the minimal file format only. For real verification and repro
 
 ### weighted
 
-Requires `--ticket-distribution weighted` and a CSV file with the `username,ticket_count` header.
+Requires `--ticket-distribution weighted` and plain comma-separated rows. A first `username,ticket_count` header is optional.
 
 ```csv
 username,ticket_count
@@ -159,7 +160,7 @@ Example output:
 ```text
 project=The Aliens
 tool=alien-draw-tool
-version=2.0.1
+version=2.0.2
 status=final
 block_source=hash
 ticketDistribution=equal
@@ -194,7 +195,7 @@ Example output:
 ```text
 project=The Aliens
 tool=alien-draw-tool
-version=2.0.1
+version=2.0.2
 status=final
 block_source=hash
 ticketDistribution=weighted
